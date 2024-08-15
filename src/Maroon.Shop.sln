@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maroon.Shop.Data", "Maroon.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maroon.Shop.Sandbox.Console", "Maroon.Shop.Sandbox.Console\Maroon.Shop.Sandbox.Console.csproj", "{7ECC6D56-E785-4A57-8A75-291552C8FF44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maroon.Shop.Api", "Maroon.Shop.Api\Maroon.Shop.Api.csproj", "{77C42013-FF44-4850-864B-5692B829F20F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{7ECC6D56-E785-4A57-8A75-291552C8FF44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7ECC6D56-E785-4A57-8A75-291552C8FF44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7ECC6D56-E785-4A57-8A75-291552C8FF44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77C42013-FF44-4850-864B-5692B829F20F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77C42013-FF44-4850-864B-5692B829F20F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77C42013-FF44-4850-864B-5692B829F20F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77C42013-FF44-4850-864B-5692B829F20F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
