@@ -31,10 +31,18 @@ namespace Maroon.Shop.Api.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("All")]
         public ActionResult<IEnumerable<Address>> GetAddresses()
         {
             return _context.Addresses;
+        }
+
+        [HttpGet("ByPostCode")]
+        public ActionResult<IEnumerable<Address>> GetAddressesByPostCode(string postcode)
+        {
+            var query = _context.Addresses.Where(a => a.PostCode.StartsWith(postcode));
+
+            return query.ToList();
         }
     }
 }
