@@ -97,7 +97,7 @@ namespace Maroon.Shop.Api.Controllers
         /// <param name="shippingAddressId">A <see cref="long"/> representing the Id of the Shipping Address.</param>
         /// <returns>An <see cref="ActionResult{IEnumerable{Order}}"/> representing the Orders found.</returns>
         [HttpGet("ByShippingAddressId")]
-        public ActionResult<IEnumerable<Order>> GetOrdersByDeliveryAddress(long shippingAddressId)
+        public ActionResult<IEnumerable<Order>> GetOrdersByShippingAddress(long shippingAddressId)
         {
             // Query for all Orders with the given shippingAddressId.
             var query = _context.Orders.Where(order => order.ShippingAddressId == (shippingAddressId));
