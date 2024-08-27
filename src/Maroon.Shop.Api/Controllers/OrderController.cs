@@ -1,8 +1,14 @@
 ﻿using Maroon.Shop.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Maroon.Shop.Api.Controllers
 {
+    public class GetOrderByCustomerRequest
+    {
+        public long CustomerId { get; set; }
+    }
+
     /// <summary>
     /// Order Controller Class, inherits from <see cref="Controller"/>.
     /// Handles requests routed to "api/[controller]", where [controller] is replaced by the name of the controller, in this case, "Order".
@@ -57,7 +63,7 @@ namespace Maroon.Shop.Api.Controllers
         public ActionResult<IEnumerable<Order>> GetOrders()
         {
             // Return all Orders.
-            return _context.Orders;
+            return Ok(_context.Orders.Include(o => o.Customer));
         }
 
         /// <summary>
@@ -66,11 +72,12 @@ namespace Maroon.Shop.Api.Controllers
         /// </summary>
         /// <param name="customerId">A <see cref="long"/> representing the Id of the Customer.</param>
         /// <returns>An <see cref="ActionResult{IEnumerable{Order}}"/> representing the Orders found.</returns>
-        [HttpGet("ByCustomerId")]
-        public ActionResult<IEnumerable<Order>> GetOrdersByCustomer(long customerId)
+        [HttpGet()]
+        [Route("ByCustomerId/{CustomerId}")]
+        public ActionResult<IEnumerable<Order>> GetOrdersByCustomer([FromRoute] GetOrderByCustomerRequest getOrderByCustomerRequest)
         {
             // Query for all Orders with the given customerId.
-            var query = _context.Orders.Where(order => order.Customer.CustomerId == (customerId));
+            var query = _context.Orders.Where(order => order.Customer.CustomerId == getOrderByCustomerRequest.CustomerId);
 
             return query.ToList();
         }
