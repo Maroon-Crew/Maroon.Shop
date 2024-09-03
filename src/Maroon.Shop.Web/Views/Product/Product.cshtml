@@ -1,0 +1,58 @@
+﻿@model ProductModel
+
+<div class="album py-5 bg-light">
+    <div class="container">
+
+        <div class="row">
+            <div class="col-8">
+                <form asp-action="AddProductToBasket" method="post">
+                    <div class="card-body">
+                        <h1 class="card-title">@Model.Name</h1>
+                        <p class="card-text" style="white-space: pre-line">
+                            @Model.Description
+                        </p>
+                        <p class="text-secondary" style="white-space: pre-line">
+                            @Model.PleaseNote
+                        </p>
+
+                        <select class="form-select" asp-for="SelectedShirtSize">
+                            <option selected>Please choose a size</option>
+                            @foreach (var size in Model.ShirtSizes)
+                            {
+                                <option value="@size">@size</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="card-body">
+
+                        <label for="quantity">Quantity: </label>
+                        <input asp-for="SelectedQuantity" value="@Model.SelectedQuantity" type="range" class="custom-range" min="1" max="5" step="1" oninput="amount.value=this.value" />
+                        <output id="amount" name="amount" for="rangeInput">@Model.SelectedQuantity</output>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-secondary">Add to basket</button>
+                            </div>
+                            <small class="text">@($"{Model.Price:C}")</small>
+                        </div>
+                    </div>
+                    <input asp-for="ProductId" type="hidden" value="@Model.ProductId" />
+                    <input asp-for="Name" type="hidden" value="@Model.Name" />
+                    <input asp-for="Price" type="hidden" value="@Model.Price" />
+                    <input asp-for="UrlFriendlyName" type="hidden" value="@Model.UrlFriendlyName" />
+                    <input asp-for="ImageUrl" type="hidden" value="@Model.ImageUrl" />
+                    <input asp-for="Description" type="hidden" value="@Model.Description" />
+                    <input asp-for="PleaseNote" type="hidden" value="@Model.PleaseNote" />
+                </form>
+            </div>
+            <div class="col-4">
+                <div class="card shadow-sm">
+                    <img src="@Model.ImageUrl" class="bd-placeholder-img card-img-top" focusable="false" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

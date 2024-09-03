@@ -1,0 +1,29 @@
+﻿@model IEnumerable<ProductCardModel>
+
+<div class="album py-5 bg-light">
+    <div class="container">
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+
+            @foreach (var product in Model)
+            {
+                <partial name="ProductCard.cshtml" for="@product" />
+            }
+        </div>
+
+        <div class="row row-cols-1">
+            <div class="col">
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled"><a class="page-link">Previous</a></li>
+                        <li class="page-item active"><a class="page-link">1</a></li>
+                        <li class="page-item"><a class="page-link">2</a></li>
+                        <li class="page-item"><a class="page-link">3</a></li>
+                        <li class="page-item"><a class="page-link">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+

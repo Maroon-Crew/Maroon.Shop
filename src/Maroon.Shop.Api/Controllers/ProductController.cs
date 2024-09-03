@@ -116,7 +116,9 @@ namespace Maroon.Shop.Api.Controllers
             {
                 Name = request.Name,
                 UrlFriendlyName = request.UrlFriendlyName,
-                Price = request.Price
+                Price = request.Price,
+                Description = request.Description,
+                ImageUrl = request.ImageUrl,
             };
 
             // Add the new Product to the Database Context.

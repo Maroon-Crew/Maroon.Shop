@@ -1,0 +1,30 @@
+﻿@model ProductCardModel
+
+<div class="col">
+    <div class="card shadow-sm">
+
+        <a href="Product/@Model.UrlFriendlyName" style="font-weight:inherit; text-decoration:inherit; color:inherit; cursor:inherit;">
+            <img src="@Model.ImageUrl" class="bd-placeholder-img card-img-top" focusable="false" />
+
+            <div class="card-body">
+                <p class="card-text">@Model.Name</p>
+            </div>
+        </a>
+
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <form method="post" asp-action="AddToBasket">
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Add to basket</button>
+                    </div>
+                    <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                    <input type="hidden" name="Name" value="@Model.Name" />
+                    <input type="hidden" name="Price" value="@Model.Price" />
+                    <input type="hidden" name="UrlFriendlyName" value="@Model.UrlFriendlyName" />
+                    <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" />
+                </form>
+                <small class="text">@($"{Model.Price:C}")</small>
+            </div>
+        </div>
+    </div>
+</div>

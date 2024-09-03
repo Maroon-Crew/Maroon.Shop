@@ -16,5 +16,9 @@ namespace Maroon.Shop.Api.Requests
         [Required(ErrorMessage = "Price is required.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]
         public decimal Price { get; set; }
+        [Required(ErrorMessage = "Description is required.")]
+        public required string Description { get; set; }
+        [Required(ErrorMessage = "ImageUrl is required.")]
+        public required string ImageUrl { get; set; }
     }
 }
