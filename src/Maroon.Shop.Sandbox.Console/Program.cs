@@ -181,11 +181,11 @@ async Task WipeDatabase(ShopContext context)
     await context.Orders.ExecuteDeleteAsync();
     await context.Products.ExecuteDeleteAsync();
     await context.SaveChangesAsync();
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Addresses', RESEED, 0)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('BasketItems', RESEED, 0)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Baskets', RESEED, 0)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Customers', RESEED, 0)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('OrderItems', RESEED, 0)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Orders', RESEED, 0)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Products', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Addresses', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('BasketItems', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Baskets', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Customers', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('OrderItems', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Orders', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Products', RESEED, 1)");
 }
