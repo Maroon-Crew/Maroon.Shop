@@ -1,4 +1,5 @@
-﻿using Maroon.Shop.Data;
+﻿using Maroon.Shop.Api.Requests;
+using Maroon.Shop.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -134,7 +135,7 @@ namespace Maroon.Shop.Api.Controllers
         [Route("{CustomerId}/Orders")]
         public IActionResult GetOrdersByCustomerId([FromRoute] GetCustomerRequest getCustomerRequest)
         {
-            GetOrderByCustomerRequest getOrderByCustomerRequest = new()
+            GetOrdersByCustomerRequest getOrderByCustomerRequest = new()
             {
                 CustomerId = getCustomerRequest.CustomerId,
             };

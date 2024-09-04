@@ -29,14 +29,20 @@ namespace Maroon.Shop.Api.Controllers
         /// Handles GET requests to "api/Product/{productId}".
         /// Attempts to retrieve a Product for the given Product Id.
         /// </summary>
-        /// <param name="productId">A <see cref="long"/> representing the Id of the Product.</param>
+        /// <param name="getProductRequest">A <see cref="GetProductRequest"/> representing the Product requested.</param>
         /// <returns>An <see cref="ActionResult{ProductResponse}"/> representing the Product found.</returns>
         [HttpGet]
-        [Route("{productId}")]
-        public ActionResult<ProductResponse> GetById(long productId)
+        [Route("{ProductId}")]
+        public ActionResult<ProductResponse> GetById([FromRoute] GetProductRequest getProductRequest)
         {
+            if (getProductRequest == null)
+            {
+                // The request is null. Therefore, return a 400 'Bad Request' response.
+                return BadRequest("Request cannot be null.");
+            }
+
             // Query for a Product with the given productId.
-            var query = _context.Products.Where(product => product.ProductId == productId);
+            var query = _context.Products.Where(product => product.ProductId == getProductRequest.ProductId);
 
             if (!query.Any())
             {
@@ -59,46 +65,50 @@ namespace Maroon.Shop.Api.Controllers
         }
 
         /// <summary>
-        /// Handles GET requests to "api/Product/All".
+        /// Handles GET requests to "api/Product/".
         /// Attempts to retrieve all Products.
         /// </summary>
-        /// <param name="request">A <see cref="ProductsRequest"/> representing the Products to get.</param>
+        /// <param name="getProductsRequest">A <see cref="GetProductsRequest"/> representing the Products to get.</param>
         /// <returns>An <see cref="ActionResult{PagedResponse{Product}}"/> representing the Products found.</returns>
-        [HttpGet("All")]
-        public ActionResult<PagedResponse<Product>> GetProducts([FromQuery] ProductsRequest request)
+        [HttpGet]
+        public ActionResult<PagedResponse<Product>> GetProducts([FromQuery] GetProductsRequest getProductsRequest)
         {
             // Retrieve all Products using pagination.
             var products = _context.Products
                 .OrderBy(products => products.ProductId) // Note: Without an OrderBy, the data could come out randomly.
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
+                .Skip((getProductsRequest.PageNumber - 1) * getProductsRequest.PageSize)
+                .Take(getProductsRequest.PageSize)
                 .ToList();
 
             // Get the Total Record count.
             var totalRecords = _context.Products.Count();
 
-            // Create the response.
-            var response = new PagedResponse<Product>
-            {
-                Data = products,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                TotalRecords = totalRecords
-            };
+            // Get the Route Name from the current action.
+            var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
-            return Ok(response);
+            // Create the response.
+            var pagedProductResponse = new PagedResponse<Product>(
+                 data: products,
+                 pageNumber: getProductsRequest.PageNumber,
+                 pageSize: getProductsRequest.PageSize,
+                 totalRecords: totalRecords,
+                 urlHelper: Url,
+                 routeName: routeName
+             );
+
+            return Ok(pagedProductResponse);
         }
 
         /// <summary>
         /// Handles POST requests to "api/Product/Create".
         /// Attempts to create a new Product.
         /// </summary>
-        /// <param name="request">A <see cref="CreateProductRequest"/> representing the new Product to be created.</param>
+        /// <param name="createProductRequest">A <see cref="CreateProductRequest"/> representing the new Product to be created.</param>
         /// <returns>An <see cref="ActionResult{ProductResponse}"/> representing the created Product.</returns>
         [HttpPost("Create")]
-        public ActionResult<ProductResponse> CreateProduct([FromBody] CreateProductRequest request)
+        public ActionResult<ProductResponse> CreateProduct([FromBody] CreateProductRequest createProductRequest)
         {
-            if (request == null)
+            if (createProductRequest == null)
             {
                 // The request is null. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Request cannot be null.");
@@ -112,30 +122,30 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Map the request object to a new Product entity.
-            var product = new Product
+            var newProduct = new Product
             {
-                Name = request.Name,
-                UrlFriendlyName = request.UrlFriendlyName,
-                Price = request.Price,
-                Description = request.Description,
-                ImageUrl = request.ImageUrl,
+                Name = createProductRequest.Name,
+                UrlFriendlyName = createProductRequest.UrlFriendlyName,
+                Price = createProductRequest.Price,
+                Description = createProductRequest.Description,
+                ImageUrl = createProductRequest.ImageUrl,
             };
 
             // Add the new Product to the Database Context.
-            _context.Products.Add(product);
+            _context.Products.Add(newProduct);
             _context.SaveChanges();
 
             // Map the Product entity to a new response object.
-            var response = new ProductResponse
+            var productResponse = new ProductResponse
             {
-                ProductId = product.ProductId,
-                Name = product.Name,
-                UrlFriendlyName = product.UrlFriendlyName,
-                Price = product.Price
+                ProductId = newProduct.ProductId,
+                Name = newProduct.Name,
+                UrlFriendlyName = newProduct.UrlFriendlyName,
+                Price = newProduct.Price
             };
 
             // Return the created Product with a 201 'Created' response.
-            return CreatedAtAction(nameof(GetById), new { productId = product.ProductId }, response);
+            return CreatedAtAction(nameof(GetById), new { productId = newProduct.ProductId }, productResponse);
         }
 
         /// <summary>
@@ -143,18 +153,18 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to update an existing Product.
         /// </summary>
         /// <param name="productId">A <see cref="long"/> representing the Id of the Product to update.</param>
-        /// <param name="request">An <see cref="UpdateProductRequest"/> representing the updated Product data.</param>
+        /// <param name="updateProductRequest">An <see cref="UpdateProductRequest"/> representing the updated Product data.</param>
         /// <returns>An <see cref="IActionResult"/> representing the result of the update operation.</returns>
         [HttpPut("Update")]
-        public IActionResult UpdateProduct(long productId, [FromBody] UpdateProductRequest request)
+        public IActionResult UpdateProduct(long productId, [FromBody] UpdateProductRequest updateProductRequest)
         {
-            if (request == null)
+            if (updateProductRequest == null)
             {
                 // The request is null. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Request cannot be null.");
             }
 
-            if (request.ProductId != productId)
+            if (updateProductRequest.ProductId != productId)
             {
                 // The productId does not match the Product. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Product Id mismatch.");
@@ -168,6 +178,7 @@ namespace Maroon.Shop.Api.Controllers
                 return NotFound();
             }
 
+            // Validate the Request.
             if (!ModelState.IsValid)
             {
                 // The Model State is invalid. Therefore, return a 400 'Bad Request' response with validation errors.
@@ -175,9 +186,9 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Update the existing Product with the values from the provided Product.
-            existingProduct.Name = request.Name;
-            existingProduct.UrlFriendlyName = request.UrlFriendlyName;
-            existingProduct.Price = request.Price;
+            existingProduct.Name = updateProductRequest.Name;
+            existingProduct.UrlFriendlyName = updateProductRequest.UrlFriendlyName;
+            existingProduct.Price = updateProductRequest.Price;
 
             // Save the changes to the database.
             _context.SaveChanges();
