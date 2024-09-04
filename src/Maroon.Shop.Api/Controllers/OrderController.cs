@@ -36,7 +36,5 @@ namespace Maroon.Shop.Api.Controllers
         {
             return _context.Orders;
         }
-
-        [HttpGet("ByPostCode")]
     }
 }
