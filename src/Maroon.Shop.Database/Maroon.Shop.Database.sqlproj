@@ -72,5 +72,6 @@
   <ItemGroup>
     <None Include="MattsDevVM.publish.publish.xml" />
     <None Include="Simon.Database.publish.xml" />
+    <None Include="James.Database.publish.xml" />
   </ItemGroup>
 </Project>
