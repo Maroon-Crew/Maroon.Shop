@@ -37,9 +37,26 @@ namespace Maroon.Shop.Api.Requests
         [Required(ErrorMessage = "Price is required.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]
         public decimal Price { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the Description of the Product. This field is required.
+        /// </summary>
         [Required(ErrorMessage = "Description is required.")]
         public required string Description { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the Notes of the Product.
+        /// </summary>
+        public string? PleaseNote { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the Image Url of the Product. This field is required.
+        /// </summary>
+        /// <remarks>
+        /// The Name cannot exceed 512 characters.
+        /// </remarks>
         [Required(ErrorMessage = "ImageUrl is required.")]
+        [StringLength(512, ErrorMessage = "Image Url cannot exceed 512 characters.")]
         public required string ImageUrl { get; set; }
     }
 }

@@ -56,7 +56,10 @@ namespace Maroon.Shop.Api.Controllers
                 {
                     ProductId = product.ProductId,
                     Name = product.Name,
+                    Description = product.Description,
+                    PleaseNote = product.PleaseNote,
                     UrlFriendlyName = product.UrlFriendlyName,
+                    ImageUrl = product.ImageUrl,
                     Price = product.Price
                 };
                 
@@ -128,6 +131,7 @@ namespace Maroon.Shop.Api.Controllers
                 UrlFriendlyName = createProductRequest.UrlFriendlyName,
                 Price = createProductRequest.Price,
                 Description = createProductRequest.Description,
+                PleaseNote = createProductRequest.PleaseNote,
                 ImageUrl = createProductRequest.ImageUrl,
             };
 
@@ -140,7 +144,10 @@ namespace Maroon.Shop.Api.Controllers
             {
                 ProductId = newProduct.ProductId,
                 Name = newProduct.Name,
+                Description = newProduct.Description,
+                PleaseNote = newProduct.PleaseNote,
                 UrlFriendlyName = newProduct.UrlFriendlyName,
+                ImageUrl = newProduct.ImageUrl,
                 Price = newProduct.Price
             };
 
@@ -189,6 +196,9 @@ namespace Maroon.Shop.Api.Controllers
             existingProduct.Name = updateProductRequest.Name;
             existingProduct.UrlFriendlyName = updateProductRequest.UrlFriendlyName;
             existingProduct.Price = updateProductRequest.Price;
+            existingProduct.Description = updateProductRequest.Description;
+            existingProduct.PleaseNote = updateProductRequest.PleaseNote;
+            existingProduct.ImageUrl = updateProductRequest.ImageUrl;
 
             // Save the changes to the database.
             _context.SaveChanges();
