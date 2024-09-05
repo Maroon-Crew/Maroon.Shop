@@ -36,7 +36,7 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve an Order for the given Order Id.
         /// </summary>
         /// <param name="getOrderRequest">A <see cref="GetOrderRequest"/> representing the Order requested.</param>
-        /// <returns>An <see cref="ActionResult{OrderResponse}"/> representing the Basket found.</returns>
+        /// <returns>An <see cref="ActionResult{OrderResponse}"/> representing the Order found.</returns>
         [HttpGet]
         [Route("{OrderId}")]
         public ActionResult<OrderResponse> GetById([FromRoute] GetOrderRequest getOrderRequest)
@@ -81,18 +81,6 @@ namespace Maroon.Shop.Api.Controllers
 
                 return Ok(orderResponse);
             }
-        }
-
-        /// <summary>
-        /// Handles GET requests to "api/Order/All".
-        /// Attempts to retrieve all Orders.
-        /// </summary>
-        /// <returns>An <see cref="ActionResult{IEnumerable{Order}}"/> representing the Orders found.</returns>
-        [HttpGet("All")]
-        public ActionResult<IEnumerable<Order>> GetOrders()
-        {
-            // Return all Orders.
-            return Ok(_context.Orders.Include(o => o.Customer));
         }
 
         /// <summary>
@@ -384,7 +372,7 @@ namespace Maroon.Shop.Api.Controllers
                 ShippingAddressId = newOrder.ShippingAddress.AddressId
             };
 
-            // Return the created Basket with a 201 'Created' response.
+            // Return the created Order with a 201 'Created' response.
             return CreatedAtAction(nameof(GetById), new { orderId = newOrder.OrderId }, orderResponse);
         }
 
@@ -407,7 +395,7 @@ namespace Maroon.Shop.Api.Controllers
             if (updateOrderRequest.OrderId != orderId)
             {
                 // The orderId does not match the Order. Therefore, return a 400 'Bad Request' response.
-                return BadRequest("Basket Id mismatch.");
+                return BadRequest("Order Id mismatch.");
             }
 
             // Attempt to get the Order to be updated.

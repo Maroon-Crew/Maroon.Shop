@@ -22,7 +22,7 @@ namespace Maroon.Shop.Api.Requests
         public int PageNumber { get; set; } = 1;
 
         /// <summary>
-        /// Gets or Sets the number of Addresses to retrieve per page. Defaults to 10.
+        /// Gets or Sets the number of Basket Items to retrieve per page. Defaults to 10.
         /// </summary>
         /// <remarks>
         /// This property determines how many Basket Items are included in each page of results.
