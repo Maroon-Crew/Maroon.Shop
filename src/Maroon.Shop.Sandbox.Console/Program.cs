@@ -17,9 +17,8 @@ Specially designed and formulated by our team for optimum performance in the gym
 
 Made from 100% cotton, this t-shirt is soft, comfortable, and durable. It is machine washable and can be tumble dried.
 
-Available in sizes small, medium, large, x-large, and xx-large.
-",
-        PleaseNote = "Please note that this t-shirt is not suitable for children under the age of 3 years.",
+Available in sizes small, medium, large, x-large, and xx-large.",
+        PleaseNote = "Please note that this t-shirt is not suitable for children under the age of 3 years."
     };
 
     var product2 = new Product
@@ -34,8 +33,7 @@ Specially designed and formulated by our team for optimum performance in the gym
 
 Made from 100% cotton, this t-shirt is soft, comfortable, and durable. It is machine washable and can be tumble dried.
 
-Available in sizes small, medium, large, x-large, and xx-large.
-",
+Available in sizes small, medium, large, x-large, and xx-large.",
     };
 
     var product3 = new Product
@@ -48,8 +46,7 @@ Available in sizes small, medium, large, x-large, and xx-large.
 
 The button-down collar provides a polished look, making it suitable for both casual and formal occasions. Made from high-quality cotton, it ensures durability and a soft, comfortable feel. Its versatile design makes it perfect for pairing with jeans for a casual look or dress trousers for a more formal ensemble.
 
-Plus, it’s machine washable and designed to maintain its color and shape after every wash. Whether you’re heading to the office, a dinner date, or a casual outing, this maroon button-down collar shirt is your go-to choice for effortless style and comfort. Upgrade your wardrobe with this timeless piece today!
-",
+Plus, it’s machine washable and designed to maintain its color and shape after every wash. Whether you’re heading to the office, a dinner date, or a casual outing, this maroon button-down collar shirt is your go-to choice for effortless style and comfort. Upgrade your wardrobe with this timeless piece today!",
     };
 
     var prodcut4 = new Product
@@ -317,11 +314,11 @@ async Task WipeDatabase(ShopContext context)
     await context.Orders.ExecuteDeleteAsync();
     await context.Products.ExecuteDeleteAsync();
     await context.SaveChangesAsync();
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Addresses', RESEED, 1)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('BasketItems', RESEED, 1)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Baskets', RESEED, 1)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Customers', RESEED, 1)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('OrderItems', RESEED, 1)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Orders', RESEED, 1)");
-    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Products', RESEED, 1)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Addresses', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('BasketItems', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Baskets', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Customers', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('OrderItems', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Orders', RESEED, 0)");
+    await context.Database.ExecuteSqlAsync($"DBCC CHECKIDENT ('Products', RESEED, 0)");
 }
