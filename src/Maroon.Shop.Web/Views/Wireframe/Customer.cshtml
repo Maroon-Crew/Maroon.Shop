@@ -1,0 +1,138 @@
+﻿<div class="row g-5">
+    <div class="col-12">
+        <form class="needs-validation" novalidate="">
+            <div class="row g-3">
+
+                <h4 class="mb-3">Account details</h4>
+
+                <div class="col-sm-6">
+                    <label for="firstName" class="form-label">First name</label>
+                    <input type="text" class="form-control" id="firstName" placeholder="" value="" required="">
+                    <div class="invalid-feedback">
+                        Valid first name is required.
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <label for="lastName" class="form-label">Last name</label>
+                    <input type="text" class="form-control" id="lastName" placeholder="" value="" required="">
+                    <div class="invalid-feedback">
+                        Valid last name is required.
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="you@example.com">
+                    <div class="invalid-feedback">
+                        Please enter a valid email address.
+                    </div>
+                </div>
+            </div>
+
+            <hr class="invisible"/>
+
+            <div class="row g-3">
+                <div class="col-lg-6 col-12">
+                    <h4 class="mb-3">Billing address</h4>
+
+                    <div class="form-check invisible">
+                        <input type="checkbox" class="form-check-input" id="isSameAddress">
+                        <label class="form-check-label" for="isSameAddress">Shipping address is the same as my billing address</label>
+                    </div>
+
+                    <div class="col-8">
+                        <label for="billingPostcode" class="form-label">Postcode</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="billingPostcode" placeholder="" required="">
+                            <button type="submit" class="btn btn-primary btn-lg">Lookup</button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Postcode required.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="billingLine1" class="form-label">Address Line 1</label>
+                        <input type="text" class="form-control" id="billingLine1" placeholder="Line 1" required="">
+                        <div class="invalid-feedback">
+                            Please enter your shipping address.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="billingLine2" class="form-label">Address Line 2<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="billingLine2" placeholder="Line 2">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="billingTown" class="form-label">Town<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="billingTown" placeholder="Town">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="billingCounty" class="form-label">County<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="billingCounty" placeholder="County">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="billingCountry" class="form-label">Country<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="billingCountry" placeholder="Country">
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-12">
+                    <h4 class="mb-3">Shipping address</h4>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="isSameAddress">
+                        <label class="form-check-label" for="isSameAddress">Shipping address is the same as my billing address</label>
+                    </div>
+
+                    <div class="col-8">
+                        <label for="shippingPostcode" class="form-label">Postcode</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="shippingPostcode" placeholder="" required="">
+                            <button type="submit" class="btn btn-primary btn-lg">Lookup</button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Postcode required.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="shippingLine1" class="form-label">Address Line 1</label>
+                        <input type="text" class="form-control" id="shippingLine1" placeholder="Line 1" required="">
+                        <div class="invalid-feedback">
+                            Please enter your shipping address.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="shippingLine2" class="form-label">Address Line 2<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="shippingLine2" placeholder="Line 2">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="shippingTown" class="form-label">Town<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="shippingTown" placeholder="Town">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="shippingCounty" class="form-label">County<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="shippingCounty" placeholder="County">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="shippingCountry" class="form-label">Country<span class="text-body-secondary"> (Optional)</span></label>
+                        <input type="text" class="form-control" id="shippingCountry" placeholder="Country">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="invisible" />
+            
+            <button class="w-100 btn btn-primary btn-lg" type="submit">Save</button>
+        </form>
+    </div>
+</div>
