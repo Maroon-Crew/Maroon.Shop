@@ -27,13 +27,7 @@
                         </li>
                     </ul>
                 </div>
-                <div class="col-lg-2 order-lg-last d-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Basket" asp-action="Index">🛒 Basket (0)</a>
-                        </li>
-                    </ul>
-                </div>
+                @await Component.InvokeAsync("Basket")
             </div>
         </nav>
     </header>
