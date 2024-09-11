@@ -42,7 +42,7 @@ namespace Maroon.Shop.Data
         //public long CustomerId { get; set; }
         public required Customer Customer { get; set; }
         public required decimal TotalPrice { get; set; }
-        public ICollection<BasketItem>? Items { get; set; }
+        public ICollection<BasketItem> Items { get; set; }
     }
 
     public class BasketItem
@@ -67,8 +67,8 @@ namespace Maroon.Shop.Data
         public required Address BillingAddress { get; set; }
         public long DefaultShippingAddressId { get; set; }
         public required Address DefaultShippingAddress { get; set; }
-        public ICollection<Basket>? Baskets { get; set; }
-        public ICollection<Order>? Orders { get; set; }
+        public ICollection<Basket> Baskets { get; set; }
+        public ICollection<Order> Orders { get; set; }
     }
 
     public class Order
@@ -83,7 +83,7 @@ namespace Maroon.Shop.Data
         public required Address BillingAddress { get; set; }
         public long ShippingAddressId { get; set; }
         public required Address ShippingAddress { get; set; }
-        public ICollection<OrderItem>? Items { get; set; }
+        public ICollection<OrderItem> Items { get; set; }
     }
 
     public class OrderItem
