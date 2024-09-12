@@ -126,9 +126,20 @@ namespace Maroon.Shop.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProductToBasket(ProductModel productModel)
         {
+            return await AddProductToBasket(productModel, "Product");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProductToSimonBasket(ProductModel productModel)
+        {
+            return await AddProductToBasket(productModel, "SimonProduct");
+        }
+
+        public async Task<IActionResult> AddProductToBasket(ProductModel productModel, string viewName)
+        {
             if (!ModelState.IsValid)
             {
-                return View("Product", productModel);
+                return View(viewName, productModel);
             }
 
             // TODO: we need a logged in user and customer id, if no user logged in, redirect to login
@@ -176,7 +187,7 @@ namespace Maroon.Shop.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            return View("Product", productModel);
+            return View(viewName, productModel);
         }
 
         [HttpGet]
