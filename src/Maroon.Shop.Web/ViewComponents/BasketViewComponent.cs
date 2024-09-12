@@ -3,6 +3,8 @@
     using Maroon.Shop.Data;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration.UserSecrets;
+    using System.Security.Claims;
 
     public class BasketViewComponent : ViewComponent
     {
@@ -15,7 +17,14 @@
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var custromerId = 1;
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return View(0);
+            }
+
+            string userId = User.Identity?.Name ?? "0";
+
+            var custromerId = int.Parse(userId);
 
             var query = from b in _context.Baskets
                         from i in b.Items

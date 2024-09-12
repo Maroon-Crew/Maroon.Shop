@@ -1,0 +1,9 @@
+﻿@model LoginModel
+
+<form asp-action="Login" method="post">
+    <label asp-for="CustomerId">Customer Id</label>
+    <input asp-for="CustomerId" type="number" />
+    <span asp-validation-for="CustomerId" class="text-danger"></span>
+    <input asp-for="ReturnUrl" type="hidden" value="@Model.ReturnUrl" />
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>

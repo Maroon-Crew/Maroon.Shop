@@ -1,0 +1,12 @@
+﻿@model Maroon.Shop.Data.Customer
+
+@if (@Model != null)
+{
+    <div class="col-lg-2 d-inline-flex justify-content-between">
+        <ul class="navbar-nav flex-grow-1">
+            <li class="nav-item">
+                👤 @Model.FirstName @Model.LastName
+            </li>
+        </ul>
+    </div>
+}
