@@ -1,0 +1,98 @@
+﻿@model ProductModel
+
+<div class="album py-5 bg-light">
+    <div class="container">
+        <div class="row">
+
+            <!-- Product Image Section -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <img src="@Model.ImageUrl"
+                         alt="Maroon T-Shirt"
+                         class="card-img-top"
+                         style="object-fit: contain; max-height: 450px; max-width: 400px; margin: auto;" />
+                </div>
+            </div>
+
+            <!-- Product Description Section -->
+            <div class="col-md-8">
+
+                <!-- Product Desccription / Notes  -->
+                <div class="card-body">
+                    <h1 class="card-title">@Model.Name</h1>
+                    <p class="card-text" style="white-space: pre-line">
+                        @Model.Description
+                    </p>
+
+                    @if(!String.IsNullOrEmpty(Model.PleaseNote))
+                    {
+                        <p class="text-secondary" style="white-space: pre-line">
+                            @Model.PleaseNote
+                        </p>
+                    }
+                   
+                    <!-- Product Size selecion -->
+                    <div class="mb-4">
+                        <label for="size-select" class="form-label" style="font-weight:500">Choose a size:</label>
+                        <select id="size-select" class="form-select">
+                            <option selected>Please choose a size</option>
+                            <option>Small</option>
+                            <option>Medium</option>
+                            <option>Large</option>
+                            <option>X-Large</option>
+                            <option>XX-Large</option>
+                        </select>
+                    </div>
+
+                    <!-- Quantity Selection -->
+                    <div class="mb-4">
+                        <label for="quantity" class="form-label" style="font-weight:500">Quantity:</label>
+                        <div class="input-group" style="max-width: 150px;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="decrement-btn" onclick="decreaseQuantity()">-</button>
+                            <input id="quantity" type="text" class="form-control text-center" value="1" readonly />
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="increment-btn" onclick="increaseQuantity()">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Add to Basket / Wishlist Buttons and Price -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm">Add to Basket</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm">Add to Wishlist</button>                          
+                        </div>
+                        <span class="fw-bold fs-5 text">@($"{Model.Price:C}")</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+
+    // Handles increasing the Quantity Value.
+    function increaseQuantity() 
+    {
+        let quantityInput = document.getElementById('quantity');
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue < 5) // Assume the Max quantity is 5.
+        {  
+            quantityInput.value = currentValue + 1;
+        }
+    }
+
+    // Handles decreasing the Quantity Value.
+    function decreaseQuantity() 
+    {
+        let quantityInput = document.getElementById('quantity');
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) // Assume the Min quantity is 1.
+        {
+            quantityInput.value = currentValue - 1;
+        }
+    }
+
+</script>

@@ -64,6 +64,17 @@ namespace Maroon.Shop.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToBasket(ProductCardModel productCardModel)
         {
+            return await AddToBasket(productCardModel, nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddToSimonBasket(ProductCardModel productCardModel)
+        {
+            return await AddToBasket(productCardModel, nameof(SimonProducts));
+        }
+
+        public async Task<IActionResult> AddToBasket(ProductCardModel productCardModel, string viewName)
+        {
             // TODO: we need a logged in user and customer id, if no user logged in, redirect to login
             var customerId = 1;
 
@@ -109,7 +120,7 @@ namespace Maroon.Shop.Web.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(viewName);
         }
 
         [HttpPost]
@@ -166,6 +177,52 @@ namespace Maroon.Shop.Web.Controllers
             await _context.SaveChangesAsync();
 
             return View("Product", productModel);
+        }
+
+        [HttpGet]
+        [Route("Product/SimonProducts")]
+        public async Task<IActionResult> SimonProducts()
+        {
+            var productsQuery = from product in _context.Products
+                        select new ProductCardModel
+                        {
+                            ProductId = product.ProductId,
+                            ImageUrl = product.ImageUrl,
+                            Name = product.Name,
+                            Price = product.Price,
+                            UrlFriendlyName = product.UrlFriendlyName,
+                        };
+
+            var products = await productsQuery.ToListAsync();
+
+            return View(products);
+        }
+
+        [HttpGet]
+        [Route("Product/SimonProducts/{urlFrieldlyName}")]
+        public async Task<IActionResult> SimonProducts(string urlFrieldlyName)
+        {
+            var productQuery = from products in _context.Products
+                               where products.UrlFriendlyName == urlFrieldlyName
+                               select new ProductModel
+                               {
+                                   ProductId = products.ProductId,
+                                   ImageUrl = products.ImageUrl,
+                                   Name = products.Name,
+                                   Price = products.Price,
+                                   UrlFriendlyName = products.UrlFriendlyName,
+                                   Description = products.Description,
+                                   PleaseNote = products.PleaseNote,
+                               };
+
+            var product = await productQuery.FirstOrDefaultAsync();
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View("SimonProduct", product);
         }
     }
 }

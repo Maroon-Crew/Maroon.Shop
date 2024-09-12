@@ -1,0 +1,31 @@
+﻿@model IEnumerable<ProductCardModel>
+
+<div class="album py-5 bg-light">
+    <div class="container">
+
+        <!-- Product Cards Section -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+            @foreach (var productCard in Model)
+            {
+                // Render each Product Card using the SimonProductCard View (like using a Custom Control).
+                <partial name="SimonProductCard.cshtml" for="@productCard" />
+            }
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="row row-cols-1 mt-4">
+            <div class="col">
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled"><a class="page-link" href="#" style="color: #6c757d;">Previous</a></li>
+                        <li class="page-item active"><a class="page-link" href="#" style="background-color: #007bff; border-color: #007bff; color: white;">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#" style="color: #6c757d;">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#" style="color: #6c757d;">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#" style="color: #6c757d;">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+</div>

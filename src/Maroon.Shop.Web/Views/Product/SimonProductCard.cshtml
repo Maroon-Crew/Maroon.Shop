@@ -1,0 +1,92 @@
+﻿@model ProductCardModel
+
+<div class="col">
+    <!-- Card Container -->
+    <div class="card shadow-sm">
+
+        <!-- Product Link - Clicking this will redirect to the product page -->
+        <a href="SimonProducts/@Model.UrlFriendlyName" class="product-link">
+            
+            <!-- Product Image -->
+            <img src="@Model.ImageUrl" class="product-image" alt="@Model.Name" focusable="false" />
+
+            <!-- Product Name -->
+            <div class="card-body">
+                <p class="product-name">@Model.Name</p>
+            </div>
+        </a>
+
+        <!-- Card Footer with "Add to Wishlist / Basket" Buttons, and Price display -->
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+               
+                <!-- Buttons for Wishlist and Add to Basket -->
+                
+                <div class="btn-group">
+                    <form method="post" asp-action="AddToSimonBasket">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Add to basket</button>
+                        <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                        <input type="hidden" name="Name" value="@Model.Name" />
+                        <input type="hidden" name="Price" value="@Model.Price" />
+                        <input type="hidden" name="UrlFriendlyName" value="@Model.UrlFriendlyName" />
+                        <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" />
+                            
+                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Add to wishlist</button>
+                </div>
+                
+               
+                <!-- Price Display with Custom Style (Bold) -->
+                <small class="product-price">@($"{Model.Price:C}")</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inline Styles for the Product Card -->
+<style>
+
+    /* Style for the Product Link */
+    .product-link 
+    {
+        text-decoration: none;
+        color: inherit;
+        cursor: inherit
+    }
+
+    /* Prevent color changes on link states */
+    .product-link:link,
+    .product-link:visited,
+    .product-link:hover,
+    .product-link:active 
+    {
+        color: inherit; 
+    }
+
+    /* Style for the Product Image */
+    .product-image 
+    {
+        max-width: 350px;
+        max-height: 350px;
+        object-fit: contain;
+        display: block;
+        margin: 15px auto 0 auto;
+    }
+
+    /* Style for the Product Name text */
+    .product-name 
+    {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin-bottom: 0;
+    }
+
+    /* Style for the Product Price */
+    .product-price 
+    {
+        font-weight: bold;
+        color: #333;
+        font-size: 1rem;
+    }
+
+</style>
