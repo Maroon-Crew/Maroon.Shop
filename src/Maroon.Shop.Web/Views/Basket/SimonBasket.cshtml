@@ -1,0 +1,46 @@
+﻿@model BasketModel
+
+<!-- Main container for the Basket view -->
+<div class="container-lg">
+
+    <!-- 'Your Basket' header -->
+    <h4 class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-primary">Your Basket</span>
+    </h4>
+
+    <hr />
+
+    <!-- Check if there are items in the basket -->
+    @if (Model != null && Model.BasketItems.Any())
+    {
+        <!-- Loop through each item in the basket and render it using the SimonBasketCard partial view -->
+        @foreach (var basketItem in Model.BasketItems)
+        {
+            <partial name="SimonBasketCard" model="basketItem" />
+        }
+    }
+    else
+    {
+        <!-- No Basket Items found. Display a message to say that the basket is empty -->
+        <p>Your basket is empty.</p>
+    }
+
+    <!-- Row for Basket Total Price and Checkout button -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-end align-items-center">
+
+                <!-- Display the total price, formatted as currency -->
+                <span id="basket-total-price" class="text-body-secondary me-3">
+                    Total: @($"{Model?.TotalPrice:C}")
+                </span>
+
+                <!-- Checkout form with button (form is necessary if submitting data) -->
+                <form method="post" action="/YourCheckoutAction" class="m-0">
+                    <button type="submit" class="btn btn-primary btn-sm" style="width: 100px;">Checkout</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

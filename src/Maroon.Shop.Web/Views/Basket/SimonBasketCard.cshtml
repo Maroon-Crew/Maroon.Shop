@@ -1,0 +1,87 @@
+﻿@model BasketItemModel
+
+<!-- Main container for the Basket Card view -->
+<div class="row align-items-center mb-2">
+    
+    <!-- Product Name -->
+    <span class="col-8">@Model.ProductName</span>
+
+    <!-- Quantity controls: Decrease Quantity button, Quantity Value Text, Increase Quantity button -->
+    <div class="col-2">
+        <div class="d-flex align-items-center">
+            <!-- Decrease Quantity button -->
+            <button id="decrement-btn-@Model.BasketItemId" type="button" class="btn btn-danger btn-sm" aria-label="Decrease quantity" onclick="UpdateQuantity(@Model.BasketItemId, -1)"> - </button>
+
+            <!-- Quantity Value Text (readonly) -->
+            <input id="quantity-@Model.BasketItemId" asp-for="Quantity" type="text" class="form-control text-center" value="@Model.Quantity" readonly />
+
+            <!-- Increase Quantity button -->
+            <button id="increment-btn-@Model.BasketItemId" type="button" class="btn btn-success btn-sm" aria-label="Increase quantity" onclick="UpdateQuantity(@Model.BasketItemId, 1)"> + </button>
+        </div>
+    </div>
+
+    <!-- Total Price and Remove Button -->
+    <div class="col-2 d-flex justify-content-end align-items-center">
+        <!-- Total price display -->
+        <span id="total-price-@Model.BasketItemId" class="text-body-secondary me-3">@($"{Model.TotalPrice:C}")</span>
+
+        <!-- Remove from basket button -->
+        <button type="button" class="btn btn-light btn-sm" style="width: 100px;" aria-label="Remove from Basket"> 🗑️ Remove </button>
+    </div>
+</div>
+
+<!-- Horizontal line separator between items -->
+<hr />
+
+<!-- JavaScript -->
+<script>
+    /**
+     * Attempts to Update the selected Quantity of the Basket Item.
+     * Increases or decreases the Quantity by the given change value.
+     * Saves the new value in the database and recalculates the total Price for the entire Basket.
+     * Response contains the updated Basket Item Total and Total for the entire Basket.
+     * param {number} basketItemId - The unique Id of the Basket Item to update.
+     * param {number} quantityChange - The change in quantity (positive to increase, negative to decrease).
+     */
+    function UpdateQuantity(basketItemId, quantityChange) {
+        // Get the quantity input element by its ID
+        var quantityElement = document.getElementById('quantity-' + basketItemId);
+        // Parse the current quantity value
+        var currentQuantity = parseInt(quantityElement.value);
+
+        // Calculate the new quantity based on the change
+        var newQuantity = currentQuantity + quantityChange;
+
+        // Ensure the quantity doesn't go below 1 (no negative or zero values)
+        if (newQuantity >= 1) {
+            // Update the UI with the new quantity
+            quantityElement.value = newQuantity;
+
+            // Make an AJAX request to update the quantity on the server
+            $.ajax({
+                url: '/Basket/UpdateBasketItemQuantity', // Server-side URL to handle quantity updates
+                type: 'POST',
+                data: // Data sent to the server
+                { 
+                    basketItemId: basketItemId, 
+                    quantity: newQuantity 
+                }, 
+                success: function (response) 
+                {
+                    // Update the Total Price for the given Basket Item.
+                    var totalPriceElement = document.getElementById('total-price-' + basketItemId);
+                    totalPriceElement.textContent = '£' + response.totalPrice.toFixed(2);
+
+                    // Update the Total Price for the entire Basket.
+                    var basketTotalPriceElement = document.getElementById('basket-total-price');
+                    basketTotalPriceElement.textContent = 'Total: £' + response.basketTotalPrice.toFixed(2);
+                },
+                error: function (xhr, status, error) 
+                {
+                    // Handle any errors that occur during the request
+                    console.error('Error updating quantity: ' + error);
+                }
+            });
+        }
+    }
+</script>
