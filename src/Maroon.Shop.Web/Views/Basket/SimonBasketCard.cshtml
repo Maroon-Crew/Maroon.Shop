@@ -1,18 +1,18 @@
 ﻿@model BasketItemModel
 
 <!-- Main container for the Basket Card view -->
-<div class="row align-items-center mb-2">
-    
+<div id="basket-item-row-@Model.BasketItemId" class="row align-items-center mb-2">
+
     <!-- Product Name -->
     <span class="col-8">@Model.ProductName</span>
 
-    <!-- Quantity controls: Decrease Quantity button, Quantity Value Text, Increase Quantity button -->
+    <!-- Quantity controls -->
     <div class="col-2">
         <div class="d-flex align-items-center">
             <!-- Decrease Quantity button -->
             <button id="decrement-btn-@Model.BasketItemId" type="button" class="btn btn-danger btn-sm" aria-label="Decrease quantity" onclick="UpdateQuantity(@Model.BasketItemId, -1)"> - </button>
 
-            <!-- Quantity Value Text (readonly) -->
+            <!-- Quantity Value Text -->
             <input id="quantity-@Model.BasketItemId" asp-for="Quantity" type="text" class="form-control text-center" value="@Model.Quantity" readonly />
 
             <!-- Increase Quantity button -->
@@ -22,18 +22,19 @@
 
     <!-- Total Price and Remove Button -->
     <div class="col-2 d-flex justify-content-end align-items-center">
-        <!-- Total price display -->
+        <!-- Total Price display -->
         <span id="total-price-@Model.BasketItemId" class="text-body-secondary me-3">@($"{Model.TotalPrice:C}")</span>
 
-        <!-- Remove from basket button -->
-        <button type="button" class="btn btn-light btn-sm" style="width: 100px;" aria-label="Remove from Basket"> 🗑️ Remove </button>
+        <!-- Remove from Basket button -->
+        <button type="button" class="btn btn-light btn-sm" style="width: 100px;" aria-label="Remove from Basket" onclick="RemoveBasketItem(@Model.BasketItemId)"> 🗑️ Remove </button>
     </div>
+
+    <!-- Horizontal Rule / Line -->
+    <hr style="margin-top: 15px;" />
 </div>
 
-<!-- Horizontal line separator between items -->
-<hr />
 
-<!-- JavaScript -->
+<!-- JavaScript for Updating and Removing Basket Items -->
 <script>
     /**
      * Attempts to Update the selected Quantity of the Basket Item.
@@ -43,29 +44,26 @@
      * param {number} basketItemId - The unique Id of the Basket Item to update.
      * param {number} quantityChange - The change in quantity (positive to increase, negative to decrease).
      */
-    function UpdateQuantity(basketItemId, quantityChange) {
-        // Get the quantity input element by its ID
+    function UpdateQuantity(basketItemId, quantityChange) 
+    {
+        // Get the quantity input element by its Id.
         var quantityElement = document.getElementById('quantity-' + basketItemId);
-        // Parse the current quantity value
+        // Parse the current quantity value.
         var currentQuantity = parseInt(quantityElement.value);
-
-        // Calculate the new quantity based on the change
+        // Calculate the new quantity based on the quantityChange.
         var newQuantity = currentQuantity + quantityChange;
 
-        // Ensure the quantity doesn't go below 1 (no negative or zero values)
-        if (newQuantity >= 1) {
+        // Ensure the quantity doesn't go below 1 (no negative or zero values).
+        if (newQuantity >= 1) 
+        {
             // Update the UI with the new quantity
             quantityElement.value = newQuantity;
 
-            // Make an AJAX request to update the quantity on the server
+            // Make an AJAX request to update the quantity on the server.
             $.ajax({
-                url: '/Basket/UpdateBasketItemQuantity', // Server-side URL to handle quantity updates
+                url: '/Basket/UpdateBasketItemQuantity', // Server-side URL to handle updating the Quantity.
                 type: 'POST',
-                data: // Data sent to the server
-                { 
-                    basketItemId: basketItemId, 
-                    quantity: newQuantity 
-                }, 
+                data: { basketItemId: basketItemId, quantity: newQuantity }, // Data sent to the server.
                 success: function (response) 
                 {
                     // Update the Total Price for the given Basket Item.
@@ -78,10 +76,45 @@
                 },
                 error: function (xhr, status, error) 
                 {
-                    // Handle any errors that occur during the request
+                    // Handle any errors that occur during the request.
                     console.error('Error updating quantity: ' + error);
                 }
             });
         }
+    }
+
+    /**
+     * Attempts to Delete the selectedBasket Item.
+     * Deletes the BasketItem record in the database and recalculates the total Price for the entire Basket.
+     * Response contains the new Total for the entire Basket.
+     * param {number} basketItemId - The unique Id of the Basket Item to delete.
+     */
+    function RemoveBasketItem(basketItemId) 
+    {
+        // Make an AJAX request to Delete the Basket Item on the server.
+        $.ajax({
+            url: '/Basket/RemoveBasketItem',
+            type: 'POST',
+            data: { basketItemId: basketItemId }, // Data sent to the server.
+            success: function (response) {
+                if (response.success)
+                {
+                    // Remove the Basket Item Row from the View.
+                    var basketItemRow = document.getElementById('basket-item-row-' + basketItemId);
+                    if (basketItemRow) {
+                        basketItemRow.remove();
+                    }
+
+                    // Update the Total Price for the entire Basket.
+                    var basketTotalPriceElement = document.getElementById('basket-total-price');
+                    basketTotalPriceElement.textContent = 'Total: £' + response.basketTotalPrice.toFixed(2);
+                }
+            },
+            error: function (xhr, status, error)
+            {
+                // Handle any errors that occur during the request.
+                console.error('Error removing basket item: ' + error);
+            }
+        });
     }
 </script>

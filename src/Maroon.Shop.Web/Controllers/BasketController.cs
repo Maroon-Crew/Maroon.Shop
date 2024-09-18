@@ -133,5 +133,39 @@ namespace Maroon.Shop.Web.Controllers
             // Sum the Total Prices of the Basket Items, or return 0 if there are no Basket Items.
             return basketItems?.Sum(bi => bi.TotalPrice) ?? 0;
         }
+
+        /// <summary>
+        /// Attempts to Delee the given Basket Item and recalculate the Total Price of the Basket.
+        /// </summary>
+        /// <param name="basketItemId">A <see cref="long"/> representing the 'Id' of the Basket.</param>
+        /// <returns>An <see cref="IActionResult"/> containing a JSON object holding the new Total Price of the entire Basket.</returns>
+        [HttpPost]
+        public IActionResult RemoveBasketItem(long basketItemId)
+        {
+            // Fetch the basket item from the database
+            var basketItem = _context.BasketItems
+                .Include(bi => bi.Basket)
+                .FirstOrDefault(bi => bi.BasketItemId == basketItemId);
+
+            if (basketItem == null)
+            {
+                // If the basket item doesn't exist, return NotFound
+                return NotFound();
+            }
+
+            // Remove the item from the database and save changes
+            _context.BasketItems.Remove(basketItem);
+            _context.SaveChanges();
+
+            // Recalculate the total price of the basket
+            var basketTotalPrice = CalculateBasketTotalPrice(basketItem.Basket.BasketId);
+
+            // Return success response with updated basket total price
+            return Json(new
+            {
+                success = true,
+                basketTotalPrice
+            });
+        }
     }
 }
