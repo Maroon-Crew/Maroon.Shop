@@ -1,3 +1,4 @@
+using Maroon.Shop.Api.Client;
 using Maroon.Shop.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddHttpClient<ProductClient>(httpClient =>
+{
+    httpClient.BaseAddress = new Uri("http://localhost:5113/api/");
+});
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 

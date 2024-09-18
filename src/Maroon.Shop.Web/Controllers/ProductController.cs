@@ -1,20 +1,24 @@
 ﻿using Azure.Core;
+using Maroon.Shop.Api.Client;
 using Maroon.Shop.Data;
 using Maroon.Shop.Web.Models;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace Maroon.Shop.Web.Controllers
 {
     public class ProductController : Controller
     {
         private readonly ShopContext _context;
+        private readonly ProductClient _productClient;
 
-        public ProductController(ShopContext context)
+        public ProductController(ShopContext context, ProductClient productClient)
         {
             _context = context;
+            _productClient = productClient;
         }
 
         public async Task<IActionResult> Index()
@@ -38,27 +42,25 @@ namespace Maroon.Shop.Web.Controllers
         [Route("Product/{urlFrieldlyName}")]
         public async Task<IActionResult> Index(string urlFrieldlyName)
         {
-            var query = from p in _context.Products
-                        where p.UrlFriendlyName == urlFrieldlyName
-                        select new ProductModel
-                        {
-                            ProductId = p.ProductId,
-                            ImageUrl = p.ImageUrl,
-                            Name = p.Name,
-                            Price = p.Price,
-                            UrlFriendlyName = p.UrlFriendlyName,
-                            Description = p.Description,
-                            PleaseNote = p.PleaseNote,
-                        };
-
-            var product = await query.FirstOrDefaultAsync();
+            var product = await _productClient.Get2Async(urlFrieldlyName);
 
             if (product == null)
             {
                 return NotFound();
             }
 
-            return View("Product", product);
+            var productModel = new ProductModel
+            { 
+                Description = product.Description,
+                ImageUrl = product.ImageUrl,
+                Name = product.Name,
+                Price = product.Price,
+                PleaseNote = product.PleaseNote,
+                ProductId = product.ProductId,
+                UrlFriendlyName = product.UrlFriendlyName,
+            };
+
+            return View("Product", productModel);
         }
 
         [HttpPost]
