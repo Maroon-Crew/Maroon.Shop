@@ -2,7 +2,6 @@
 using Maroon.Shop.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Maroon.Shop.Web.Controllers
 {
@@ -136,6 +135,7 @@ namespace Maroon.Shop.Web.Controllers
         }
 
         /// <summary>
+        /// Handles POST to '../Basket/RemoveBasketItem'.
         /// Attempts to Delee the given Basket Item and recalculate the Total Price of the Basket.
         /// </summary>
         /// <param name="basketItemId">A <see cref="long"/> representing the 'Id' of the Basket.</param>
@@ -170,6 +170,7 @@ namespace Maroon.Shop.Web.Controllers
         }
 
         /// <summary>
+        /// Handles GET to '../Basket/GetBasketItemCount'.
         /// Attempts to get the Basket Item Count for the current logged in User Account.
         /// </summary>
         /// <returns>An <see cref="Task{IActionResult}"/>containing a JSON object holding the Basket Item count.</returns>
