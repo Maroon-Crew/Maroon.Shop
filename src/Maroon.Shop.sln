@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maroon.Shop.Sandbox.Console
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maroon.Shop.Api", "Maroon.Shop.Api\Maroon.Shop.Api.csproj", "{77C42013-FF44-4850-864B-5692B829F20F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maroon.Shop.Web", "Maroon.Shop.Web\Maroon.Shop.Web.csproj", "{8CABDF03-EAF8-4296-8037-F7E339E0CF76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maroon.Shop.Web", "Maroon.Shop.Web\Maroon.Shop.Web.csproj", "{8CABDF03-EAF8-4296-8037-F7E339E0CF76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maroon.Shop.Api.Client", "Maroon.Shop.Api.Client\Maroon.Shop.Api.Client.csproj", "{6ED4984A-C838-4F26-84B8-F745C73BF8DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{8CABDF03-EAF8-4296-8037-F7E339E0CF76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CABDF03-EAF8-4296-8037-F7E339E0CF76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CABDF03-EAF8-4296-8037-F7E339E0CF76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ED4984A-C838-4F26-84B8-F745C73BF8DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ED4984A-C838-4F26-84B8-F745C73BF8DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ED4984A-C838-4F26-84B8-F745C73BF8DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ED4984A-C838-4F26-84B8-F745C73BF8DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

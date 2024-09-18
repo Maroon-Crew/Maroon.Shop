@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Maroon.Shop.Api.Client\Maroon.Shop.Api.Client.csproj" />
     <ProjectReference Include="..\Maroon.Shop.Data\Maroon.Shop.Data.csproj" />
   </ItemGroup>
 

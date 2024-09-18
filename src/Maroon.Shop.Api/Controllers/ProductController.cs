@@ -2,6 +2,7 @@
 using Maroon.Shop.Api.Responses;
 using Maroon.Shop.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Maroon.Shop.Api.Controllers
 {
@@ -32,7 +33,7 @@ namespace Maroon.Shop.Api.Controllers
         /// <param name="getProductRequest">A <see cref="GetProductRequest"/> representing the Product requested.</param>
         /// <returns>An <see cref="ActionResult{ProductResponse}"/> representing the Product found.</returns>
         [HttpGet]
-        [Route("{ProductId}")]
+        [Route("GetById/{ProductId}")]
         public ActionResult<ProductResponse> GetById([FromRoute] GetProductRequest getProductRequest)
         {
             if (getProductRequest == null)
@@ -65,6 +66,39 @@ namespace Maroon.Shop.Api.Controllers
                 
                 return Ok(productResponse);
             }
+        }
+
+        [HttpGet]
+        [Route("{productName}")]
+        public async Task<ActionResult<ProductResponse>> GetByName([FromRoute] string productName)
+        {
+            if (string.IsNullOrWhiteSpace(productName))
+            {
+                // The request is null. Therefore, return a 400 'Bad Request' response.
+                return BadRequest($"{nameof(productName)} cannot be null.");
+            }
+
+            var query = from p in _context.Products
+                        where p.UrlFriendlyName == productName
+                        select new ProductResponse
+                        {
+                            ProductId = p.ProductId,
+                            ImageUrl = p.ImageUrl,
+                            Name = p.Name,
+                            Price = p.Price,
+                            UrlFriendlyName = p.UrlFriendlyName,
+                            Description = p.Description,
+                            PleaseNote = p.PleaseNote,
+                        };
+
+            var product = await query.FirstOrDefaultAsync();
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(product);
         }
 
         /// <summary>
