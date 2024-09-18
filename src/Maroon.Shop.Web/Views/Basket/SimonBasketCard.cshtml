@@ -36,14 +36,12 @@
 
 <!-- JavaScript for Updating and Removing Basket Items -->
 <script>
-    /**
-     * Attempts to Update the selected Quantity of the Basket Item.
-     * Increases or decreases the Quantity by the given change value.
-     * Saves the new value in the database and recalculates the total Price for the entire Basket.
-     * Response contains the updated Basket Item Total and Total for the entire Basket.
-     * param {number} basketItemId - The unique Id of the Basket Item to update.
-     * param {number} quantityChange - The change in quantity (positive to increase, negative to decrease).
-     */
+    // Attempts to Update the selected Quantity of the Basket Item.
+    // Increases or decreases the Quantity by the given change value.
+    // Saves the new value in the database and recalculates the total Price for the entire Basket.
+    // Response contains the updated Basket Item Total and Total for the entire Basket.
+    // param {number} basketItemId - The unique Id of the Basket Item to update.
+    // param {number} quantityChange - The change in quantity (positive to increase, negative to decrease).
     function UpdateQuantity(basketItemId, quantityChange) 
     {
         // Get the quantity input element by its Id.
@@ -73,6 +71,9 @@
                     // Update the Total Price for the entire Basket.
                     var basketTotalPriceElement = document.getElementById('basket-total-price');
                     basketTotalPriceElement.textContent = 'Total: £' + response.basketTotalPrice.toFixed(2);
+
+                    // Update the Basket Item count on the layout button.
+                    UpdateBasketItemCount();
                 },
                 error: function (xhr, status, error) 
                 {
@@ -83,17 +84,15 @@
         }
     }
 
-    /**
-     * Attempts to Delete the selectedBasket Item.
-     * Deletes the BasketItem record in the database and recalculates the total Price for the entire Basket.
-     * Response contains the new Total for the entire Basket.
-     * param {number} basketItemId - The unique Id of the Basket Item to delete.
-     */
+     // Attempts to Delete the selectedBasket Item.
+     // Deletes the BasketItem record in the database and recalculates the total Price for the entire Basket.
+     // Response contains the new Total for the entire Basket.
+     // param {number} basketItemId - The unique Id of the Basket Item to delete.
     function RemoveBasketItem(basketItemId) 
     {
         // Make an AJAX request to Delete the Basket Item on the server.
         $.ajax({
-            url: '/Basket/RemoveBasketItem',
+            url: '/Basket/RemoveBasketItem', // Server-side URL to handle updating Removing the Basket.
             type: 'POST',
             data: { basketItemId: basketItemId }, // Data sent to the server.
             success: function (response) {
@@ -108,12 +107,33 @@
                     // Update the Total Price for the entire Basket.
                     var basketTotalPriceElement = document.getElementById('basket-total-price');
                     basketTotalPriceElement.textContent = 'Total: £' + response.basketTotalPrice.toFixed(2);
+
+                    // Update the Basket Item count on the layout button.
+                    UpdateBasketItemCount();
                 }
             },
             error: function (xhr, status, error)
             {
                 // Handle any errors that occur during the request.
                 console.error('Error removing basket item: ' + error);
+            }
+        });
+    }
+
+    // Attempts to get the current Basket Item count.
+    function UpdateBasketItemCount() 
+    {
+        $.ajax({
+            url: '/Basket/GetBasketItemCount', // Server-side URL to handle getting the Basket Item Count.
+            type: 'GET',
+            success: function (response) {
+                // Update the Basket button with the new Basket Item Count.
+                var basketCountElement = document.getElementById('basket-count');
+                basketCountElement.textContent = '🛒 Basket (' + response.basketCount + ')';
+            },
+            error: function (xhr, status, error) {
+                // Handle any errors that occur during the request.
+                console.error('Error updating basket count: ' + error);
             }
         });
     }

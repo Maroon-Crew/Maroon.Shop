@@ -2,6 +2,7 @@
 using Maroon.Shop.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Maroon.Shop.Web.Controllers
 {
@@ -166,6 +167,35 @@ namespace Maroon.Shop.Web.Controllers
                 success = true,
                 basketTotalPrice
             });
+        }
+
+        /// <summary>
+        /// Attempts to get the Basket Item Count for the current logged in User Account.
+        /// </summary>
+        /// <returns>An <see cref="Task{IActionResult}"/>containing a JSON object holding the Basket Item count.</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetBasketItemCount()
+        {
+            // Check if the user is authenticated.
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                // The user is not authenticated. Therefore return Basket item count as 0 by default.
+                return Json(new { basketCount = 0 });
+            }
+
+            // Get the logged-in user's account name (Customer Id).
+            string userAccountId = User.Identity?.Name ?? "0";
+            var customerId = int.Parse(userAccountId);
+
+            // Fetch the count of basket items for the customer
+            var basketItemQuery = from basket in _context.Baskets
+                                  from basketItem in basket.Items
+                                  where basket.Customer.CustomerId == customerId
+                                  select basketItem.Quantity;
+
+            int basketItemCount = await basketItemQuery.SumAsync();
+
+            return Json(new { basketCount = basketItemCount });
         }
     }
 }
