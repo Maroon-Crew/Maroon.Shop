@@ -1,0 +1,155 @@
+﻿@model CustomerModel
+
+<div class="row g-5">
+    <div class="col-12">
+        <form asp-action="UpdateCustomer" method="post" class="needs-validation" novalidate>
+            <div class="row g-3">
+
+                 <input asp-for="CustomerId" type="hidden" value="@Model.CustomerId" />
+
+                <h4 class="mb-3">Account details</h4>
+
+                <div class="col-sm-6">
+                    <label for="firstName" class="form-label">First name</label>
+                    <input asp-for="FirstName" type="text" class="form-control" id="firstName" placeholder="" value="@Model.FirstName" required>
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+
+                <div class="col-sm-6">
+                    <label for="lastName" class="form-label">Last name</label>
+                    <input asp-for="LastName" type="text" class="form-control" id="lastName" placeholder="" value="@Model.LastName" required>
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+
+                <div class="col-sm-6">
+                    <label for="email" class="form-label">Email</label>
+                    <input asp-for="EmailAddress" type="email" class="form-control" id="email" placeholder="you@example.com" value="@Model.EmailAddress">
+                    <span asp-validation-for="EmailAddress" class="text-danger"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="row g-3">
+                <div class="col-lg-6 col-12">
+                    <h4 class="mb-3">Billing address</h4>
+
+                    <input asp-for="BillingAddressId" type="hidden" value="@Model.BillingAddressId" />
+                    <input asp-for="BillingAddress.AddressId" type="hidden" value="@Model.BillingAddress.AddressId" />
+
+                    <div class="form-check invisible">
+                        <input type="checkbox" class="form-check-input" id="isSameAddress">
+                        <label class="form-check-label" for="isSameAddress">Shipping address is the same as my billing address</label>
+                    </div>
+
+                    <div class="col-8" style="margin-bottom: 20px;">
+                        <label for="billingPostcode" class="form-label">Postcode</label>
+                        <div class="input-group">
+                            <input asp-for="BillingAddress.PostCode" type="text" class="form-control" id="billingPostcode" placeholder="" value="@Model.BillingAddress.PostCode" required>
+                            <button type="button" class="btn btn-primary">Lookup</button>
+                        </div>
+                        <div class="invalid-feedback">Postcode required.</div>
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="billingNameOfRecipient" class="form-label">Name Of Recipient</label>
+                        <input asp-for="BillingAddress.NameOfRecipient" type="text" class="form-control" id="billingNameOfRecipient" placeholder="Name Of Recipient" value="@Model.BillingAddress.NameOfRecipient" required>
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="billingLine1" class="form-label">Address Line 1</label>
+                        <input asp-for="BillingAddress.Line1" type="text" class="form-control" id="billingLine1" placeholder="Line 1" value="@Model.BillingAddress.Line1" required>
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="billingLine2" class="form-label">Address Line 2 <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="BillingAddress.Line2" type="text" class="form-control" id="billingLine2" placeholder="Line 2" value="@Model.BillingAddress.Line2">
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="billingTown" class="form-label">Town <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="BillingAddress.Town" type="text" class="form-control" id="billingTown" placeholder="Town" value="@Model.BillingAddress.Town">
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="billingCounty" class="form-label">County <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="BillingAddress.County" type="text" class="form-control" id="billingCounty" placeholder="County" value="@Model.BillingAddress.County">
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="billingCountry" class="form-label">Country <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="BillingAddress.Country" type="text" class="form-control" id="billingCountry" placeholder="Country" value="@Model.BillingAddress.Country">
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-12">
+                    <h4 class="mb-3">Shipping address</h4>
+
+                    <input asp-for="DefaultShippingAddressId" type="hidden" value="@Model.DefaultShippingAddressId" />
+                    <input asp-for="ShippingAddress.AddressId" type="hidden" value="@Model.ShippingAddress?.AddressId" />
+
+                    <div class="form-check">
+                        <input asp-for="IsShippingAddressTheSameAsBillingAddress" type="checkbox" class="form-check-input" id="isSameAsBilling" checked="@Model.IsShippingAddressTheSameAsBillingAddress">
+                        <label class="form-check-label" for="isSameAsBilling">Same as billing address</label>
+                    </div>
+
+                    <div class="col-8" style="margin-bottom: 20px;">
+                        <label for="shippingPostcode" class="form-label">Postcode</label>
+                        <div class="input-group">
+                            <input asp-for="ShippingAddress.PostCode" type="text" class="form-control shipping-control" id="shippingPostcode" placeholder="" value="@Model.ShippingAddress?.PostCode" required>
+                            <button type="button" class="btn btn-primary shipping-control">Lookup</button>
+                        </div>
+                        <div class="invalid-feedback">Postcode required.</div>
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="shippingNameOfRecipient" class="form-label">Name Of Recipient</label>
+                        <input asp-for="ShippingAddress.NameOfRecipient" type="text" class="form-control" id="shippingNameOfRecipient" placeholder="Name Of Recipient" value="@Model.ShippingAddress?.NameOfRecipient" required>
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="shippingLine1" class="form-label">Address Line 1</label>
+                        <input asp-for="ShippingAddress.Line1" type="text" class="form-control shipping-control" id="shippingLine1" placeholder="Line 1" value="@Model.ShippingAddress?.Line1" required>
+                        <div class="invalid-feedback">Please enter your shipping address.</div>
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="shippingLine2" class="form-label">Address Line 2 <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="ShippingAddress.Line2" type="text" class="form-control shipping-control" id="shippingLine2" placeholder="Line 2" value="@Model.ShippingAddress?.Line2">
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;" style="margin-bottom: 20px;">
+                        <label for="shippingTown" class="form-label">Town <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="ShippingAddress.Town" type="text" class="form-control shipping-control" id="shippingTown" placeholder="Town" value="@Model.ShippingAddress?.Town">
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="shippingCounty" class="form-label">County <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="ShippingAddress.County" type="text" class="form-control shipping-control" id="shippingCounty" placeholder="County" value="@Model.ShippingAddress?.County">
+                    </div>
+
+                    <div class="col-12" style="margin-bottom: 20px;">
+                        <label for="shippingCountry" class="form-label">Country <span class="text-body-secondary">(Optional)</span></label>
+                        <input asp-for="ShippingAddress.Country" type="text" class="form-control shipping-control" id="shippingCountry" placeholder="Country" value="@Model.ShippingAddress?.Country">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <button class="w-100 btn btn-primary btn-lg" type="submit">Save</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('isSameAsBilling').addEventListener('change', function () {
+        var shippingControls = document.querySelectorAll('.shipping-control');
+        shippingControls.forEach(function (control) {
+            control.disabled = this.checked;
+        }, this);
+    });
+
+    // Initialize state on page load
+    document.getElementById('isSameAsBilling').dispatchEvent(new Event('change'));
+</script>
