@@ -1,5 +1,5 @@
-﻿using Maroon.Shop.Api.Requests;
-using Maroon.Shop.Api.Responses;
+﻿using Maroon.Shop.Api.Data.Requests;
+using Maroon.Shop.Api.Data.Responses;
 using System.Net.Http.Json;
 
 namespace Maroon.Shop.Api.Client

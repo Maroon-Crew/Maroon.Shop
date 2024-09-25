@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Maroon.Shop.Api.Client;
+using Maroon.Shop.Api.Client.Api.Product;
 using Maroon.Shop.Data;
 using Maroon.Shop.Web.Models;
 using Microsoft.AspNetCore.Http.Features;
@@ -14,35 +15,36 @@ namespace Maroon.Shop.Web.Controllers
     {
         private readonly ShopContext _context;
         private readonly ProductClient _productClient;
+        private readonly MaroonClient _maroonClient;
 
-        public ProductController(ShopContext context, ProductClient productClient)
+        public ProductController(ShopContext context, ProductClient productClient, MaroonClient maroonClient)
         {
             _context = context;
             _productClient = productClient;
+            _maroonClient = maroonClient;
         }
 
         public async Task<IActionResult> Index()
         {
-            var query = from p in _context.Products
-                        select new ProductCardModel
-                        {
-                            ProductId = p.ProductId,
-                            ImageUrl = p.ImageUrl,
-                            Name = p.Name,
-                            Price = p.Price,
-                            UrlFriendlyName = p.UrlFriendlyName,                
-                        };
+            var products = await _maroonClient.Api.Product.GetAsync(c => c.QueryParameters = new ProductRequestBuilder.ProductRequestBuilderGetQueryParameters { PageNumber = 1, PageSize = 9 });
 
-            var products = await query.ToListAsync();
+            var models = products.Data.Select(p => new ProductCardModel
+            { 
+                ImageUrl = p.ImageUrl,
+                Name = p.Name,
+                Price = p.Price.Value,
+                ProductId = p.ProductId.Value,
+                UrlFriendlyName = p.UrlFriendlyName,
+            });
 
-            return View(products);
+            return View(models);
         }
 
         [HttpGet]
         [Route("Product/{urlFrieldlyName}")]
         public async Task<IActionResult> Index(string urlFrieldlyName)
         {
-            var product = await _productClient.Get2Async(urlFrieldlyName);
+            var product = await _maroonClient.Api.Product[urlFrieldlyName].GetAsync();
 
             if (product == null)
             {
@@ -54,9 +56,9 @@ namespace Maroon.Shop.Web.Controllers
                 Description = product.Description,
                 ImageUrl = product.ImageUrl,
                 Name = product.Name,
-                Price = product.Price,
+                Price = product.Price.Value,
                 PleaseNote = product.PleaseNote,
-                ProductId = product.ProductId,
+                ProductId = product.ProductId.Value,
                 UrlFriendlyName = product.UrlFriendlyName,
             };
 

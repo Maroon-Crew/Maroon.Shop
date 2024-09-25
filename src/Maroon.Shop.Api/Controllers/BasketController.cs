@@ -1,8 +1,7 @@
-﻿using Maroon.Shop.Api.Requests;
-using Maroon.Shop.Api.Responses;
-using Maroon.Shop.Data;
+﻿using Maroon.Shop.Api.Data.Repositories;
+using Maroon.Shop.Api.Data.Requests;
+using Maroon.Shop.Api.Data.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Maroon.Shop.Api.Controllers
 {
@@ -14,16 +13,13 @@ namespace Maroon.Shop.Api.Controllers
     [ApiController]
     public class BasketController : Controller
     {
-        // Private backing fields.
-        private readonly ShopContext _context;
+        private readonly BasketRepository _basketRepository;
+        private readonly CustomerRepository _customerRepository;
 
-        /// <summary>
-        /// Constructor. Initialises the Basket Controller.
-        /// </summary>
-        /// <param name="context">A <see cref="ShopContext"/> representing the Data Context.</param>
-        public BasketController(ShopContext context)
+        public BasketController(BasketRepository basketRepository, CustomerRepository customerRepository)
         {
-            _context = context;
+            _basketRepository = basketRepository;
+            _customerRepository = customerRepository;
         }
 
         /// <summary>
@@ -49,26 +45,15 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Query for a Basket with the given basketId.
-            var query = _context.Baskets
-                .Include(basket => basket.Customer)
-                .Where(basket => basket.BasketId == getBasketRequest.BasketId);
+            var basketResponse = _basketRepository.GetById(getBasketRequest);
 
-            if (!query.Any())
+            if (basketResponse == null)
             {
                 // The Basket could not be found, return a 404 'Not Found' response.
                 return NotFound();
             }
             else
             {
-                var basket = query.First();
-                var basketResponse = new BasketResponse
-                {
-                    BasketId = basket.BasketId,
-                    CustomerId = basket.Customer.CustomerId,
-                    TotalPrice = basket.TotalPrice
-                };
-
                 return Ok(basketResponse);
             }
         }
@@ -77,33 +62,15 @@ namespace Maroon.Shop.Api.Controllers
         /// Handles GET requests to "api/Basket/".
         /// Attempts to retrieve all Baskets.
         /// <param name="getBasketsRequest">A <see cref="GetBasketsRequest"/> representing the Baskets to get.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Basket}}"/> representing the Baskets found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{BasketResponse}}"/> representing the Baskets found.</returns>
         [HttpGet]
-        public ActionResult<PagedResponse<Basket>> GetBaskets([FromQuery] GetBasketsRequest getBasketsRequest)
+        public ActionResult<PagedResponse<BasketResponse>> GetBaskets([FromQuery] GetBasketsRequest getBasketsRequest)
         {
-            // Retrieve all Baskets using pagination.
-            var baskets = _context.Baskets
-                .Include(basket => basket.Customer)
-                .OrderBy(basket => basket.BasketId) // Note: Without an OrderBy, the data could come out randomly.
-                .Skip((getBasketsRequest.PageNumber - 1) * getBasketsRequest.PageSize)
-                .Take(getBasketsRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = _context.Baskets.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var pagedProductResponse = new PagedResponse<Basket>(
-                 data: baskets,
-                 pageNumber: getBasketsRequest.PageNumber,
-                 pageSize: getBasketsRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName
-             );
+            var pagedProductResponse = _basketRepository.GetBaskets(getBasketsRequest, routeName, Url);
 
             return Ok(pagedProductResponse);
         }
@@ -113,9 +80,9 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve all Baskets for the given customerId.
         /// </summary>
         /// <param name="getBasketsByCustomerRequest">A <see cref="GetBasketsByCustomerRequest"/> representing the Baskets By Customer Request.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Basket}}"/> representing the Baskets found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{BasketResponse}}"/> representing the Baskets found.</returns>
         [HttpGet("ByCustomerId")]
-        public ActionResult<PagedResponse<Basket>> GetBasketsByCustomer([FromQuery] GetBasketsByCustomerRequest getBasketsByCustomerRequest)
+        public ActionResult<PagedResponse<BasketResponse>> GetBasketsByCustomer([FromQuery] GetBasketsByCustomerRequest getBasketsByCustomerRequest)
         {
             if (getBasketsByCustomerRequest == null)
             {
@@ -130,33 +97,11 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Retrieve all Baskets for the given Customer Id.
-            var filteredBaskets = _context.Baskets
-                .Include(basket => basket.Customer)
-                .Where(basket => basket.Customer.CustomerId == getBasketsByCustomerRequest.CustomerId);
-
-            // Apply Pagination.
-            var filteredBasketsPaginated = filteredBaskets
-                .Skip((getBasketsByCustomerRequest.PageNumber - 1) * getBasketsByCustomerRequest.PageSize)
-                .Take(getBasketsByCustomerRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = filteredBaskets.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var response = new PagedResponse<Basket>(
-                 data: filteredBasketsPaginated,
-                 pageNumber: getBasketsByCustomerRequest.PageNumber,
-                 pageSize: getBasketsByCustomerRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName,
-                 routeValues: new { getBasketsByCustomerRequest.CustomerId } // Pass in the CustomerId Query Value to ensure it ends up in the Next and Previous Page URLs.
-             );
+            var response = _basketRepository.GetBasketsByCustomer(getBasketsByCustomerRequest, routeName, Url);
 
             return Ok(response);
         }
@@ -184,34 +129,24 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Customer Exists.
-            var customer = _context.Customers.FirstOrDefault(customer => customer.CustomerId == createBasketRequest.CustomerId);
+            var customer = _customerRepository.GetById(new GetCustomerRequest { CustomerId = createBasketRequest.CustomerId });
             if (customer == null)
             {
                 // A Customer doesn't exist for the given Customer Id. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Customer Id is invalid.");
             }
 
-            // Map the request object to a new Basket entity.
-            var newBasket = new Basket
-            {
-                Customer = customer,
-                TotalPrice = createBasketRequest.TotalPrice
-            };
-
-            // Add the new Basket to the Database Context.
-            _context.Baskets.Add(newBasket);
-            _context.SaveChanges();
-
             // Map the Basket entity to a new response object.
-            var basketResponse = new BasketResponse
+            var basketResponse = _basketRepository.CreateBasket(createBasketRequest);
+
+            // something else went wrong, we don't have the information to say what
+            if (basketResponse == null)
             {
-                BasketId = newBasket.BasketId,
-                CustomerId = newBasket.Customer.CustomerId,
-                TotalPrice = newBasket.TotalPrice
-            };
+                return BadRequest();
+            }
 
             // Return the created Basket with a 201 'Created' response.
-            return CreatedAtAction(nameof(GetById), new { basketId = newBasket.BasketId }, basketResponse);
+            return CreatedAtAction(nameof(GetById), new { basketId = basketResponse?.BasketId }, basketResponse);
         }
 
         /// <summary>
@@ -237,7 +172,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Attempt to get the Basket to be updated.
-            var existingBasket = _context.Baskets.FirstOrDefault(basket => basket.BasketId == basketId);
+            var existingBasket = _basketRepository.GetById(new GetBasketRequest { BasketId = basketId });
             if (existingBasket == null)
             {
                 // The Basket to be updated does not exist. Therefore, return a 404 'Not Found' response.
@@ -252,19 +187,14 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Customer Exists.
-            var customer = _context.Customers.FirstOrDefault(customer => customer.CustomerId == updateBasketRequest.CustomerId);
+            var customer = _customerRepository.GetById(new GetCustomerRequest { CustomerId = updateBasketRequest.CustomerId });
             if (customer == null)
             {
                 // A Customer doesn't for the given Customer Id. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Customer Id is invalid.");
             }
 
-            // Update the existing Basket with the values from the provided Basket.
-            existingBasket.Customer = customer;
-            existingBasket.TotalPrice = updateBasketRequest.TotalPrice;
-
-            // Save the changes to the database.
-            _context.SaveChanges();
+            _basketRepository.UpdateBasket(basketId, updateBasketRequest);
 
             // Return a 204 'No Content' response to indicate that the update was successful.
             return NoContent();

@@ -1,91 +1,10 @@
-﻿using Maroon.Shop.Api.Requests;
-using Maroon.Shop.Data;
+﻿using Maroon.Shop.Api.Data.Repositories;
+using Maroon.Shop.Api.Data.Requests;
+using Maroon.Shop.Api.Data.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Reflection;
-using static Maroon.Shop.Api.Controllers.CustomerController;
 
 namespace Maroon.Shop.Api.Controllers
 {
-    public static class UrlHelperExtensions
-    {
-        public static string? ActionLink<TController>(this IUrlHelper urlHelper, string action, object? values = null) where TController : Controller
-        {
-            return urlHelper.ActionLink(action, typeof(TController).Name.Replace("Controller", ""), values);
-        }
-
-        // does not work
-        public static string? ActionLink<TController, TResult>(this IUrlHelper urlHelper, Expression<Func<TController, ActionResult<TResult>>> actionSelector) where TController : Controller
-        {
-            var methodInfo = GetMethodInfo(actionSelector);
-            var values = GetMethodValues(actionSelector);
-            return urlHelper.ActionLink(methodInfo.Name, typeof(TController).Name.Replace("Controller", ""), values);
-        }
-
-        private static MemberInfo GetMethodInfo<TController, TResult>(Expression<Func<TController, ActionResult<TResult>>> expression)
-        {
-            var callExpression = (MethodCallExpression)expression.Body;
-
-            return callExpression.Method;
-        }
-
-        private static object? GetMethodValues<TController, TResult>(Expression<Func<TController, ActionResult<TResult>>> expression)
-        {
-            var callExpression = (MethodCallExpression)expression.Body;
-
-            var query = from memberExpression in callExpression.Arguments.OfType<MemberExpression>()
-                        where memberExpression.Expression.NodeType == ExpressionType.Constant
-                        let constantExpression = (ConstantExpression)memberExpression.Expression
-                        let parameterName = memberExpression.Member.Name
-                        let constantValue = constantExpression.Value
-                        select memberExpression.Member.ReflectedType.GetField(parameterName).GetValue(constantValue);
-
-            return query.FirstOrDefault();
-        }
-    }
-
-    public static class ControllerExtensions
-    {
-        public static IActionResult RedirectToAction<TController, TResult>(this ControllerBase controller, Expression<Func<TController, ActionResult<TResult>>> actionSelector) where TController : Controller
-        {
-            var methodInfo = GetMethodInfo(actionSelector);
-            var values = GetMethodValues(actionSelector);
-            return controller.RedirectToAction(methodInfo.Name, typeof(TController).Name.Replace("Controller", ""), values);
-        }
-
-        private static MemberInfo GetMethodInfo<TController, TResult>(Expression<Func<TController, ActionResult<TResult>>> expression)
-        {
-            var callExpression = (MethodCallExpression)expression.Body;
-
-            return callExpression.Method;
-        }
-
-        private static object? GetMethodValues<TController, TResult>(Expression<Func<TController, ActionResult<TResult>>> expression)
-        {
-            var callExpression = (MethodCallExpression)expression.Body;
-
-            var query = from memberExpression in callExpression.Arguments.OfType<MemberExpression>()
-                        where memberExpression.Expression.NodeType == ExpressionType.Constant
-                        let constantExpression = (ConstantExpression)memberExpression.Expression
-                        let parameterName = memberExpression.Member.Name
-                        let constantValue = constantExpression.Value
-                        select memberExpression.Member.ReflectedType.GetField(parameterName).GetValue(constantValue);
-
-            return query.FirstOrDefault();
-        }
-
-        public static IActionResult RedirectToAction<TController>(this ControllerBase controller, string action, object? values = null) where TController : Controller
-        {
-            return controller.RedirectToAction(action, typeof(TController).Name.Replace("Controller", ""), values);
-        }
-    }
-
-    public class GetCustomerRequest
-    {
-        public long CustomerId { get; set; }
-    }
-
     /// <summary>
     /// Customer Controller Class, inherits from <see cref="Controller"/>.
     /// Handles requests routed to "api/[controller]", where [controller] is replaced by the name of the controller, in this case, "Customer".
@@ -94,16 +13,11 @@ namespace Maroon.Shop.Api.Controllers
     [ApiController]
     public class CustomerController : Controller
     {
-        // Private backing fields.
-        private readonly ShopContext _context;
+        private readonly CustomerRepository _customerRepository;
 
-        /// <summary>
-        /// Constructor. Initialises the Customer Controller.
-        /// </summary>
-        /// <param name="context">A <see cref="ShopContext"/> representing the Data Context.</param>
-        public CustomerController(ShopContext context)
+        public CustomerController(CustomerRepository customerRepository)
         {
-            _context = context;
+            _customerRepository = customerRepository;
         }
 
         /// <summary>
@@ -111,15 +25,15 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve a Customer for the given Customer Id.
         /// </summary>
         /// <param name="customerId">A <see cref="long"/> representing the Id of the Customer.</param>
-        /// <returns>An <see cref="ActionResult{Customer}"/> representing the Customer found.</returns>
+        /// <returns>An <see cref="ActionResult{CustomerResponse}"/> representing the Customer found.</returns>
         [HttpGet]
         [Route("{CustomerId}")]
-        public ActionResult<Customer> GetById([FromRoute] GetCustomerRequest getCustomerRequest)
+        public ActionResult<CustomerResponse> GetById([FromRoute] GetCustomerRequest getCustomerRequest)
         {
             // Query for a Customer with the given customerId.
-            var query = _context.Customers.Include(c => c.BillingAddress).Include(c => c.DefaultShippingAddress).Where(customer => customer.CustomerId == getCustomerRequest.CustomerId);
+            var customer = _customerRepository.GetById(getCustomerRequest);
 
-            if (!query.Any())
+            if (customer == null)
             {
                 // The Customer could not be found, return a 404 Not Found response.
                 return NotFound();
@@ -127,7 +41,7 @@ namespace Maroon.Shop.Api.Controllers
             else
             {
                 // Return the first matching Customer.
-                return query.First();
+                return customer;
             }
         }
 
@@ -155,12 +69,12 @@ namespace Maroon.Shop.Api.Controllers
         /// Handles GET requests to "api/Customer/All".
         /// Attempts to retrieve all Customers.
         /// </summary>
-        /// <returns>An <see cref="ActionResult{IEnumerable{Customer}}"/> representing the Customers found.</returns>
+        /// <returns>An <see cref="ActionResult{IEnumerable{CustomerResponse}}"/> representing the Customers found.</returns>
         [HttpGet()]
-        public ActionResult<IEnumerable<Customer>> GetCustomers()
+        public ActionResult<IEnumerable<CustomerResponse>> GetCustomers()
         {
             // Return all Customers.
-            return Ok(_context.Customers.Include(c => c.BillingAddress).Include(c => c.DefaultShippingAddress));
+            return Ok(_customerRepository.GetCustomers());
         }
     }
 }

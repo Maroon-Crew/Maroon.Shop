@@ -1,0 +1,33 @@
+{
+  "descriptionHash": "14AEC953863CEF1A9D4C18BF5909CCE041B07C2B82A6550D76FAF79DC12F8CD9F209D40E2323074679E0FF2B1F0269BBEBCEB6DDE5872FD770123EF155EE7DEB",
+  "descriptionLocation": "https://localhost:7282/swagger/v1/swagger.yaml",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "1.18.0",
+  "clientClassName": "MaroonClient",
+  "clientNamespaceName": "Maroon.Shop.Api.Client",
+  "language": "CSharp",
+  "usesBackingStore": false,
+  "excludeBackwardCompatible": false,
+  "includeAdditionalData": true,
+  "disableSSLValidation": false,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Form.FormSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Multipart.MultipartSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Form.FormParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "text/plain;q=0.9",
+    "application/x-www-form-urlencoded;q=0.2",
+    "multipart/form-data;q=0.1"
+  ],
+  "includePatterns": [],
+  "excludePatterns": [],
+  "disabledValidationRules": []
+}

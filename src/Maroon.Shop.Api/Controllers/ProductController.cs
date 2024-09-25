@@ -1,8 +1,7 @@
-﻿using Maroon.Shop.Api.Requests;
-using Maroon.Shop.Api.Responses;
-using Maroon.Shop.Data;
+﻿using Maroon.Shop.Api.Data.Repositories;
+using Maroon.Shop.Api.Data.Requests;
+using Maroon.Shop.Api.Data.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Maroon.Shop.Api.Controllers
 {
@@ -14,16 +13,11 @@ namespace Maroon.Shop.Api.Controllers
     [ApiController]
     public class ProductController : Controller
     {
-        // Private backing fields.
-        private readonly ShopContext _context;
+        private readonly ProductRepository _productRepository;
 
-        /// <summary>
-        /// Constructor. Initialises the Product Controller.
-        /// </summary>
-        /// <param name="context">A <see cref="ShopContext"/> representing the Data Context.</param>
-        public ProductController(ShopContext context)
+        public ProductController(ProductRepository productRepository)
         {
-            _context = context;
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -43,27 +37,15 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Query for a Product with the given productId.
-            var query = _context.Products.Where(product => product.ProductId == getProductRequest.ProductId);
+            var productResponse = _productRepository.GetById(getProductRequest);
 
-            if (!query.Any())
+            if (productResponse == null)
             {
                 // The Product could not be found, return a 404 'Not Found' response.
                 return NotFound();
             }
             else
-            {
-                var product = query.First();
-                var productResponse = new ProductResponse
-                {
-                    ProductId = product.ProductId,
-                    Name = product.Name,
-                    Description = product.Description,
-                    PleaseNote = product.PleaseNote,
-                    UrlFriendlyName = product.UrlFriendlyName,
-                    ImageUrl = product.ImageUrl,
-                    Price = product.Price
-                };
-                
+            {                
                 return Ok(productResponse);
             }
         }
@@ -78,20 +60,7 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest($"{nameof(productName)} cannot be null.");
             }
 
-            var query = from p in _context.Products
-                        where p.UrlFriendlyName == productName
-                        select new ProductResponse
-                        {
-                            ProductId = p.ProductId,
-                            ImageUrl = p.ImageUrl,
-                            Name = p.Name,
-                            Price = p.Price,
-                            UrlFriendlyName = p.UrlFriendlyName,
-                            Description = p.Description,
-                            PleaseNote = p.PleaseNote,
-                        };
-
-            var product = await query.FirstOrDefaultAsync();
+            var product = await _productRepository.GetByNameAsync(productName);
 
             if (product == null)
             {
@@ -106,32 +75,15 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve all Products.
         /// </summary>
         /// <param name="getProductsRequest">A <see cref="GetProductsRequest"/> representing the Products to get.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Product}}"/> representing the Products found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{ProductResponse}}"/> representing the Products found.</returns>
         [HttpGet]
-        public ActionResult<PagedResponse<Product>> GetProducts([FromQuery] GetProductsRequest getProductsRequest)
+        public ActionResult<PagedResponse<ProductResponse>> GetProducts([FromQuery] GetProductsRequest getProductsRequest)
         {
-            // Retrieve all Products using pagination.
-            var products = _context.Products
-                .OrderBy(products => products.ProductId) // Note: Without an OrderBy, the data could come out randomly.
-                .Skip((getProductsRequest.PageNumber - 1) * getProductsRequest.PageSize)
-                .Take(getProductsRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = _context.Products.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var pagedProductResponse = new PagedResponse<Product>(
-                 data: products,
-                 pageNumber: getProductsRequest.PageNumber,
-                 pageSize: getProductsRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName
-             );
+            var pagedProductResponse = _productRepository.GetProducts(getProductsRequest, routeName, Url);
 
             return Ok(pagedProductResponse);
         }
@@ -158,35 +110,16 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Map the request object to a new Product entity.
-            var newProduct = new Product
-            {
-                Name = createProductRequest.Name,
-                UrlFriendlyName = createProductRequest.UrlFriendlyName,
-                Price = createProductRequest.Price,
-                Description = createProductRequest.Description,
-                PleaseNote = createProductRequest.PleaseNote,
-                ImageUrl = createProductRequest.ImageUrl,
-            };
-
-            // Add the new Product to the Database Context.
-            _context.Products.Add(newProduct);
-            _context.SaveChanges();
-
             // Map the Product entity to a new response object.
-            var productResponse = new ProductResponse
+            var productResponse = _productRepository.CreateProduct(createProductRequest);
+
+            if (productResponse == null)
             {
-                ProductId = newProduct.ProductId,
-                Name = newProduct.Name,
-                Description = newProduct.Description,
-                PleaseNote = newProduct.PleaseNote,
-                UrlFriendlyName = newProduct.UrlFriendlyName,
-                ImageUrl = newProduct.ImageUrl,
-                Price = newProduct.Price
-            };
+                return BadRequest();
+            }
 
             // Return the created Product with a 201 'Created' response.
-            return CreatedAtAction(nameof(GetById), new { productId = newProduct.ProductId }, productResponse);
+            return CreatedAtAction(nameof(GetById), new { productId = productResponse.ProductId }, productResponse);
         }
 
         /// <summary>
@@ -212,7 +145,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Attempt to get the Product to be updated.
-            var existingProduct = _context.Products.FirstOrDefault(product => product.ProductId == productId);
+            var existingProduct = _productRepository.GetById(new GetProductRequest { ProductId = productId });
             if (existingProduct == null)
             {
                 // The Product to be updated does not exist. Therefore, return a 404 'Not Found' response.
@@ -226,16 +159,7 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Update the existing Product with the values from the provided Product.
-            existingProduct.Name = updateProductRequest.Name;
-            existingProduct.UrlFriendlyName = updateProductRequest.UrlFriendlyName;
-            existingProduct.Price = updateProductRequest.Price;
-            existingProduct.Description = updateProductRequest.Description;
-            existingProduct.PleaseNote = updateProductRequest.PleaseNote;
-            existingProduct.ImageUrl = updateProductRequest.ImageUrl;
-
-            // Save the changes to the database.
-            _context.SaveChanges();
+            _productRepository.UpdateProduct(productId, updateProductRequest);
 
             // Return a 204 'No Content' response to indicate that the update was successful.
             return NoContent();

@@ -19,6 +19,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddDbContext<ShopContext>(options => options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
 
+// Add Kiota handlers to the dependency injection container
+builder.Services.AddKiotaHandlers();
+
+// Register the factory for the GitHub client
+builder.Services.AddHttpClient<MaroonClientFactory>((sp, client) => {
+    // Set the base address and accept header
+    // or other settings on the http client
+    client.BaseAddress = new Uri("https://localhost:7282/");
+}).AttachKiotaHandlers(); // Attach the Kiota handlers to the http client, this is to enable all the Kiota features.
+
+builder.Services.AddTransient(sp => sp.GetRequiredService<MaroonClientFactory>().GetClient());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

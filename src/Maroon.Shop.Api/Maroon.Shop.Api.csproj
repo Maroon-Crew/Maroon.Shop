@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Maroon.Shop.Api.Data\Maroon.Shop.Api.Data.csproj" />
     <ProjectReference Include="..\Maroon.Shop.Data\Maroon.Shop.Data.csproj" />
   </ItemGroup>
 

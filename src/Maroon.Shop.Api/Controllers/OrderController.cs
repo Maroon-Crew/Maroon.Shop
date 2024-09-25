@@ -1,16 +1,10 @@
-﻿using Maroon.Shop.Api.Requests;
-using Maroon.Shop.Api.Responses;
-using Maroon.Shop.Data;
+﻿using Maroon.Shop.Api.Data.Repositories;
+using Maroon.Shop.Api.Data.Requests;
+using Maroon.Shop.Api.Data.Responses;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Maroon.Shop.Api.Controllers
 {
-    public class GetOrderByCustomerRequest
-    {
-        public long CustomerId { get; set; }
-    }
-
     /// <summary>
     /// Order Controller Class, inherits from <see cref="Controller"/>.
     /// Handles requests routed to "api/[controller]", where [controller] is replaced by the name of the controller, in this case, "Order".
@@ -19,16 +13,15 @@ namespace Maroon.Shop.Api.Controllers
     [ApiController]
     public class OrderController : Controller
     {
-        // Private backing fields.
-        private readonly ShopContext _context;
+        private readonly OrderRepository _orderRepository;
+        private readonly CustomerRepository _customerRepository;
+        private readonly AddressRepository _addressRepository;
 
-        /// <summary>
-        /// Constructor. Initialises the Order Controller.
-        /// </summary>
-        /// <param name="context">A <see cref="ShopContext"/> representing the Data Context.</param>
-        public OrderController(ShopContext context)
+        public OrderController(OrderRepository orderRepository, CustomerRepository customerRepository, AddressRepository addressRepository)
         {
-            _context = context;
+            _orderRepository = orderRepository;
+            _customerRepository = customerRepository;
+            _addressRepository = addressRepository;
         }
 
         /// <summary>
@@ -54,31 +47,15 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Query for an Order with the given OrderId.
-            var query = _context.Orders
-                .Include(order => order.Customer)
-                .Include(order => order.BillingAddress)
-                .Include(order => order.ShippingAddress)
-                .Where(order => order.OrderId == getOrderRequest.OrderId);
+            var orderResponse = _orderRepository.GetById(new GetOrderRequest { OrderId = getOrderRequest.OrderId });
 
-            if (!query.Any())
+            if (orderResponse == null)
             {
                 // The Order could not be found, return a 404 'Not Found' response.
                 return NotFound();
             }
             else
-            {
-                var order = query.First();
-                var orderResponse = new OrderResponse
-                {
-                    OrderId = order.OrderId,
-                    CustomerId = order.Customer.CustomerId,
-                    TotalPrice = order.TotalPrice,
-                    DateCreated = order.DateCreated,
-                    BillingAddressId = order.BillingAddress.AddressId,
-                    ShippingAddressId = order.ShippingAddress.AddressId
-                };
-
+            {                
                 return Ok(orderResponse);
             }
         }
@@ -87,35 +64,15 @@ namespace Maroon.Shop.Api.Controllers
         /// Handles GET requests to "api/Order/".
         /// Attempts to retrieve all Orders.
         /// <param name="getOrdersRequest">A <see cref="GetOrdersRequest"/> representing the Orders to get.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Order}}"/> representing the Orders found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{OrderResponse}}"/> representing the Orders found.</returns>
         [HttpGet]
-        public ActionResult<PagedResponse<Order>> GetOrders([FromQuery] GetOrdersRequest getOrdersRequest)
+        public ActionResult<PagedResponse<OrderResponse>> GetOrders([FromQuery] GetOrdersRequest getOrdersRequest)
         {
-            // Retrieve all Orders using pagination.
-            var orders = _context.Orders
-                .Include(order => order.Customer)
-                .Include(order => order.BillingAddress)
-                .Include(order => order.ShippingAddress)
-                .OrderBy(order => order.OrderId) // Note: Without an OrderBy, the data could come out randomly.
-                .Skip((getOrdersRequest.PageNumber - 1) * getOrdersRequest.PageSize)
-                .Take(getOrdersRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = _context.Orders.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var pagedOrderResponse = new PagedResponse<Order>(
-                 data: orders,
-                 pageNumber: getOrdersRequest.PageNumber,
-                 pageSize: getOrdersRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName
-             );
+            var pagedOrderResponse = _orderRepository.GetOrders(getOrdersRequest, routeName, Url);
 
             return Ok(pagedOrderResponse);
         }
@@ -125,15 +82,12 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve all Orders for the given customerId.
         /// </summary>
         /// <param name="customerId">A <see cref="long"/> representing the Id of the Customer.</param>
-        /// <returns>An <see cref="ActionResult{IEnumerable{Order}}"/> representing the Orders found.</returns>
+        /// <returns>An <see cref="ActionResult{IEnumerable{OrderResponse}}"/> representing the Orders found.</returns>
         [HttpGet()]
         [Route("ByCustomerId/{CustomerId}")]
-        public ActionResult<IEnumerable<Order>> GetOrdersByCustomer([FromRoute] GetOrderByCustomerRequest getOrderByCustomerRequest)
+        public ActionResult<IEnumerable<OrderResponse>> GetOrdersByCustomer([FromRoute] GetOrderByCustomerRequest getOrderByCustomerRequest)
         {
-            // Query for all Orders with the given customerId.
-            var query = _context.Orders.Where(order => order.Customer.CustomerId == getOrderByCustomerRequest.CustomerId);
-
-            return query.ToList();
+            return Ok(_orderRepository.GetOrdersByCustomer(getOrderByCustomerRequest));
         }
 
         /// <summary>
@@ -141,9 +95,9 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve all Orders for the given customerId.
         /// </summary>
         /// <param name="getOrdersByCustomerRequest">A <see cref="GetOrdersByCustomerRequest"/> representing the Orders By Customer Request.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Order}}"/> representing the Orders found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{OrderResponse}}"/> representing the Orders found.</returns>
         [HttpGet("ByCustomerId")]
-        public ActionResult<PagedResponse<Order>> GetOrdersByCustomer([FromQuery] GetOrdersByCustomerRequest getOrdersByCustomerRequest)
+        public ActionResult<PagedResponse<OrderResponse>> GetOrdersByCustomer([FromQuery] GetOrdersByCustomerRequest getOrdersByCustomerRequest)
         {
             if (getOrdersByCustomerRequest == null)
             {
@@ -158,35 +112,11 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Retrieve all Orders for the given Customer Id.
-            var filteredOrders = _context.Orders
-                .Include(order => order.Customer)
-                .Include(order => order.BillingAddress)
-                .Include(order => order.ShippingAddress)
-                .Where(order => order.Customer.CustomerId == getOrdersByCustomerRequest.CustomerId);
-
-            // Apply Pagination.
-            var filteredOrdersPaginated = filteredOrders
-                .Skip((getOrdersByCustomerRequest.PageNumber - 1) * getOrdersByCustomerRequest.PageSize)
-                .Take(getOrdersByCustomerRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = filteredOrders.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var response = new PagedResponse<Order>(
-                 data: filteredOrdersPaginated,
-                 pageNumber: getOrdersByCustomerRequest.PageNumber,
-                 pageSize: getOrdersByCustomerRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName,
-                 routeValues: new { getOrdersByCustomerRequest.CustomerId } // Pass in the CustomerId Query Value to ensure it ends up in the Next and Previous Page URLs.
-             );
+            var response = _orderRepository.GetOrdersByCustomer(getOrdersByCustomerRequest, routeName, Url);
 
             return Ok(response);
         }
@@ -196,9 +126,9 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve all Orders for the given billingAddressId.
         /// </summary>
         /// <param name="getOrdersByBillingAddressRequest">A <see cref="GetOrdersByBillingAddressRequest"/> representing the Orders By Billing Address Request.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Order}}"/> representing the Orders found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{OrderResponse}}"/> representing the Orders found.</returns>
         [HttpGet("ByBillingAddressId")]
-        public ActionResult<PagedResponse<Order>> GetOrdersByBillingAddress([FromQuery] GetOrdersByBillingAddressRequest getOrdersByBillingAddressRequest)
+        public ActionResult<PagedResponse<OrderResponse>> GetOrdersByBillingAddress([FromQuery] GetOrdersByBillingAddressRequest getOrdersByBillingAddressRequest)
         {
             if (getOrdersByBillingAddressRequest == null)
             {
@@ -213,35 +143,11 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Retrieve all Orders for the given Billing Address Id.
-            var filteredOrders = _context.Orders
-                .Include(order => order.Customer)
-                .Include(order => order.BillingAddress)
-                .Include(order => order.ShippingAddress)
-                .Where(order => order.BillingAddress.AddressId == getOrdersByBillingAddressRequest.BillingAddressId);
-
-            // Apply Pagination.
-            var filteredOrdersPaginated = filteredOrders
-                .Skip((getOrdersByBillingAddressRequest.PageNumber - 1) * getOrdersByBillingAddressRequest.PageSize)
-                .Take(getOrdersByBillingAddressRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = filteredOrders.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var response = new PagedResponse<Order>(
-                 data: filteredOrdersPaginated,
-                 pageNumber: getOrdersByBillingAddressRequest.PageNumber,
-                 pageSize: getOrdersByBillingAddressRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName,
-                 routeValues: new { getOrdersByBillingAddressRequest.BillingAddressId } // Pass in the BillingAddressId Query Value to ensure it ends up in the Next and Previous Page URLs.
-             );
+            var response = _orderRepository.GetOrdersByBillingAddress(getOrdersByBillingAddressRequest, routeName, Url);
 
             return Ok(response);
         }
@@ -251,9 +157,9 @@ namespace Maroon.Shop.Api.Controllers
         /// Attempts to retrieve all Orders for the given shippingAddressId.
         /// </summary>
         /// <param name="getOrdersByShippingAddressRequest">A <see cref="GetOrdersByShippingAddressRequest"/> representing the Orders By Shipping Address Request.</param>
-        /// <returns>An <see cref="ActionResult{PagedResponse{Order}}"/> representing the Orders found.</returns>
+        /// <returns>An <see cref="ActionResult{PagedResponse{OrderResponse}}"/> representing the Orders found.</returns>
         [HttpGet("ByShippingAddressId")]
-        public ActionResult<PagedResponse<Order>> GetOrdersByShippingAddress([FromQuery] GetOrdersByShippingAddressRequest getOrdersByShippingAddressRequest)
+        public ActionResult<PagedResponse<OrderResponse>> GetOrdersByShippingAddress([FromQuery] GetOrdersByShippingAddressRequest getOrdersByShippingAddressRequest)
         {
             if (getOrdersByShippingAddressRequest == null)
             {
@@ -268,35 +174,11 @@ namespace Maroon.Shop.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Retrieve all Orders for the given Shipping Address Id.
-            var filteredOrders = _context.Orders
-                .Include(order => order.Customer)
-                .Include(order => order.BillingAddress)
-                .Include(order => order.ShippingAddress)
-                .Where(order => order.ShippingAddress.AddressId == getOrdersByShippingAddressRequest.ShippingAddressId);
-
-            // Apply Pagination.
-            var filteredOrdersPaginated = filteredOrders
-                .Skip((getOrdersByShippingAddressRequest.PageNumber - 1) * getOrdersByShippingAddressRequest.PageSize)
-                .Take(getOrdersByShippingAddressRequest.PageSize)
-                .ToList();
-
-            // Get the Total Record count.
-            var totalRecords = filteredOrders.Count();
-
             // Get the Route Name from the current action.
             var routeName = ControllerContext.ActionDescriptor.AttributeRouteInfo?.Name ?? string.Empty;
 
             // Create the response.
-            var response = new PagedResponse<Order>(
-                 data: filteredOrdersPaginated,
-                 pageNumber: getOrdersByShippingAddressRequest.PageNumber,
-                 pageSize: getOrdersByShippingAddressRequest.PageSize,
-                 totalRecords: totalRecords,
-                 urlHelper: Url,
-                 routeName: routeName,
-                 routeValues: new { getOrdersByShippingAddressRequest.ShippingAddressId } // Pass in the ShippingAddressId Query Value to ensure it ends up in the Next and Previous Page URLs.
-             );
+            var response = _orderRepository.GetOrdersByShippingAddress(getOrdersByShippingAddressRequest, routeName, Url);
 
             return Ok(response);
         }
@@ -324,7 +206,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Customer Exists.
-            var customer = _context.Customers.FirstOrDefault(customer => customer.CustomerId == createOrderRequest.CustomerId);
+            var customer = _customerRepository.GetById(new GetCustomerRequest { CustomerId = createOrderRequest.CustomerId });
             if (customer == null)
             {
                 // A Customer doesn't exist for the given Customer Id. Therefore, return a 400 'Bad Request' response.
@@ -332,7 +214,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Billing Address Exists.
-            var billingAddress = _context.Addresses.FirstOrDefault(address => address.AddressId == createOrderRequest.BillingAddressId);
+            var billingAddress = _addressRepository.GetById(new GetAddressRequest { AddressId = createOrderRequest.BillingAddressId });
             if (billingAddress == null)
             {
                 // A Billing Address doesn't exist for the given Billing Address Id. Therefore, return a 400 'Bad Request' response.
@@ -340,40 +222,23 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Shipping Address Exists.
-            var shippingAddress = _context.Addresses.FirstOrDefault(address => address.AddressId == createOrderRequest.ShippingAddressId);
+            var shippingAddress = _addressRepository.GetById(new GetAddressRequest { AddressId = createOrderRequest.ShippingAddressId });
             if (shippingAddress == null)
             {
                 // A Shipping Address doesn't exist for the given Shipping Address Id. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Shipping Address Id is invalid.");
             }
 
-            // Map the request object to a new Order entity.
-            var newOrder = new Order
-            {
-                Customer = customer,
-                TotalPrice = createOrderRequest.TotalPrice,
-                DateCreated = createOrderRequest.DateCreated,
-                BillingAddress = billingAddress,
-                ShippingAddress = shippingAddress
-            };
-
-            // Add the new Order to the Database Context.
-            _context.Orders.Add(newOrder);
-            _context.SaveChanges();
-
             // Map the Order entity to a new response object.
-            var orderResponse = new OrderResponse
+            var orderResponse = _orderRepository.CreateOrder(createOrderRequest);
+
+            if (orderResponse == null)
             {
-                OrderId = newOrder.OrderId,
-                CustomerId = newOrder.Customer.CustomerId,
-                TotalPrice = newOrder.TotalPrice,
-                DateCreated = newOrder.DateCreated,
-                BillingAddressId = newOrder.BillingAddress.AddressId,
-                ShippingAddressId = newOrder.ShippingAddress.AddressId
-            };
+                return BadRequest();
+            }
 
             // Return the created Order with a 201 'Created' response.
-            return CreatedAtAction(nameof(GetById), new { orderId = newOrder.OrderId }, orderResponse);
+            return CreatedAtAction(nameof(GetById), new { orderId = orderResponse.OrderId }, orderResponse);
         }
 
         /// <summary>
@@ -399,7 +264,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Attempt to get the Order to be updated.
-            var existingOrder = _context.Orders.FirstOrDefault(order => order.OrderId == orderId);
+            var existingOrder = _orderRepository.GetById(new GetOrderRequest { OrderId = orderId });
             if (existingOrder == null)
             {
                 // The Order to be updated does not exist. Therefore, return a 404 'Not Found' response.
@@ -414,7 +279,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Customer Exists.
-            var customer = _context.Customers.FirstOrDefault(customer => customer.CustomerId == updateOrderRequest.CustomerId);
+            var customer = _customerRepository.GetById(new GetCustomerRequest { CustomerId = updateOrderRequest.CustomerId });
             if (customer == null)
             {
                 // A Customer doesn't for the given Customer Id. Therefore, return a 400 'Bad Request' response.
@@ -422,7 +287,7 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Billing Address Exists.
-            var billingAddress = _context.Addresses.FirstOrDefault(address => address.AddressId == updateOrderRequest.BillingAddressId);
+            var billingAddress = _addressRepository.GetById(new GetAddressRequest { AddressId = updateOrderRequest.BillingAddressId });
             if (billingAddress == null)
             {
                 // A Billing Address doesn't exist for the given Billing Address Id. Therefore, return a 400 'Bad Request' response.
@@ -430,22 +295,14 @@ namespace Maroon.Shop.Api.Controllers
             }
 
             // Check that the associated Shipping Address Exists.
-            var shippingAddress = _context.Addresses.FirstOrDefault(address => address.AddressId == updateOrderRequest.ShippingAddressId);
+            var shippingAddress = _addressRepository.GetById(new GetAddressRequest { AddressId = updateOrderRequest.ShippingAddressId });
             if (shippingAddress == null)
             {
                 // A Shipping Address doesn't exist for the given Shipping Address Id. Therefore, return a 400 'Bad Request' response.
                 return BadRequest("Shipping Address Id is invalid.");
             }
 
-            // Update the existing Order with the values from the provided Order.
-            existingOrder.Customer = customer;
-            existingOrder.TotalPrice = updateOrderRequest.TotalPrice;
-            existingOrder.DateCreated = updateOrderRequest.DateCreated;
-            existingOrder.BillingAddress = billingAddress;
-            existingOrder.ShippingAddress = shippingAddress;
-
-            // Save the changes to the database.
-            _context.SaveChanges();
+            _orderRepository.UpdateOrder(orderId, updateOrderRequest);
 
             // Return a 204 'No Content' response to indicate that the update was successful.
             return NoContent();
